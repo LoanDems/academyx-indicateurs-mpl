@@ -70,6 +70,16 @@ import CanalRegressionFiltreIndicator from './CanalRegressionFiltre.js';
 import OscillateurIchimokuIndicator from './OscillateurIchimoku.js';
 import SpiralesNiveauxIndicator from './SpiralesNiveaux.js';
 import PlagesOscillationsIndicator from './PlagesOscillations.js';
+import RsiAwesomeOscillatorIndicator from './RsiAwesomeOscillator.js';
+import NuageTendanceRetestsIndicator from './NuageTendanceRetests.js';
+import FiltreKalmanVolumeIndicator from './FiltreKalmanVolume.js';
+import CanalRegressionPolynomialeIndicator from './CanalRegressionPolynomiale.js';
+import CarteVolumesNiveauxIndicator from './CarteVolumesNiveaux.js';
+import ProfilVolumeFiltreIndicator from './ProfilVolumeFiltre.js';
+import RsiInverseBornesIndicator from './RsiInverseBornes.js';
+import MonteCarloMouvementsIndicator from './MonteCarloMouvements.js';
+import SupertrendContexteSortiesIndicator from './SupertrendContexteSorties.js';
+import PrevisionMonteCarloIndicator from './PrevisionMonteCarlo.js';
 
 export const INDICATEURS_MPL = [
   SupportsResistancesVolumeIndicator,
@@ -142,6 +152,16 @@ export const INDICATEURS_MPL = [
   OscillateurIchimokuIndicator,
   SpiralesNiveauxIndicator,
   PlagesOscillationsIndicator,
+  RsiAwesomeOscillatorIndicator,
+  NuageTendanceRetestsIndicator,
+  FiltreKalmanVolumeIndicator,
+  CanalRegressionPolynomialeIndicator,
+  CarteVolumesNiveauxIndicator,
+  ProfilVolumeFiltreIndicator,
+  RsiInverseBornesIndicator,
+  MonteCarloMouvementsIndicator,
+  SupertrendContexteSortiesIndicator,
+  PrevisionMonteCarloIndicator,
 ];
 
 export default INDICATEURS_MPL;
