@@ -60,6 +60,16 @@ import ProfilsOscillationsIndicator from './ProfilsOscillations.js';
 import ProfilProbabiliteRetournementIndicator from './ProfilProbabiliteRetournement.js';
 import TendanceVolumetriqueIndicator from './TendanceVolumetrique.js';
 import VagueTendance3DIndicator from './VagueTendance3D.js';
+import MoyennesLiquiditeIndicator from './MoyennesLiquidite.js';
+import MoyennesEcartTypeMultiplesIndicator from './MoyennesEcartTypeMultiples.js';
+import VagueDeltaVolumeIndicator from './VagueDeltaVolume.js';
+import CanalFluxVolumeIndicator from './CanalFluxVolume.js';
+import ZonesFluxVolumeIndicator from './ZonesFluxVolume.js';
+import ThermometreVolumeSuperieurIndicator from './ThermometreVolumeSuperieur.js';
+import CanalRegressionFiltreIndicator from './CanalRegressionFiltre.js';
+import OscillateurIchimokuIndicator from './OscillateurIchimoku.js';
+import SpiralesNiveauxIndicator from './SpiralesNiveaux.js';
+import PlagesOscillationsIndicator from './PlagesOscillations.js';
 
 export const INDICATEURS_MPL = [
   SupportsResistancesVolumeIndicator,
@@ -122,6 +132,16 @@ export const INDICATEURS_MPL = [
   ProfilProbabiliteRetournementIndicator,
   TendanceVolumetriqueIndicator,
   VagueTendance3DIndicator,
+  MoyennesLiquiditeIndicator,
+  MoyennesEcartTypeMultiplesIndicator,
+  VagueDeltaVolumeIndicator,
+  CanalFluxVolumeIndicator,
+  ZonesFluxVolumeIndicator,
+  ThermometreVolumeSuperieurIndicator,
+  CanalRegressionFiltreIndicator,
+  OscillateurIchimokuIndicator,
+  SpiralesNiveauxIndicator,
+  PlagesOscillationsIndicator,
 ];
 
 export default INDICATEURS_MPL;
