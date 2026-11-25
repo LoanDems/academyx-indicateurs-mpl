@@ -234,3 +234,33 @@ export function remplir(o, suite, haut, bas, i, couleur, derniere) {
   }
   if (derniere && suite.debut !== null) dessiner();
 }
+
+/**
+ * Sortie a points STABLES gardes d'un calcul a l'autre (pour les indicateurs dont le rendu de toutes les
+ * sorties depasse le budget du tick) : `S[cle]` (dans `etat.sorties`, partage entre l'etat et sa copie)
+ * garde les points 0 .. stables - 1, construits une fois par `point(j)` ; les suivants sont reconstruits
+ * a chaque appel. `stables` = nombre de points qui ne peuvent plus changer : n - 1 pour un point qui ne
+ * lit que sa barre, n - 2 pour un point de plot() (sa couleur est celle de la barre suivante). Le tableau
+ * rendu est neuf (les points stables sont partages).
+ */
+export function pointsStables(S, cle, n, stables, point) {
+  const c = S[cle] || (S[cle] = []);
+  const k = Math.max(0, Math.min(stables, n));
+  if (c.length > k) c.length = k;
+  for (let j = c.length; j < k; j++) c.push(point(j));
+  const out = c.slice();
+  for (let j = k; j < n; j++) out.push(point(j));
+  return out;
+}
+
+/** Point j de `tracer(data, valeurs, couleurs)` (sans decalage). */
+export function pointTrace(data, valeurs, couleurs, j) {
+  const v = valeurs[j];
+  const p = { time: data[j].time, value: typeof v === 'number' && Number.isFinite(v) ? v : null };
+  if (couleurs) {
+    const suivante = j + 1 < data.length ? valeurs[j + 1] : null;
+    const trou = !(typeof suivante === 'number' && Number.isFinite(suivante));
+    p.color = (!trou && couleurs[j + 1]) || TRANSPARENT;
+  }
+  return p;
+}

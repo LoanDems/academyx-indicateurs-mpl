@@ -50,6 +50,16 @@ import TendanceBayesienneIndicator from './TendanceBayesienne.js';
 import NiveauxClesRegroupementIndicator from './NiveauxClesRegroupement.js';
 import RetournementsCassuresVolumeIndicator from './RetournementsCassuresVolume.js';
 import RsiSupertrendIndicator from './RsiSupertrend.js';
+import MoyenneTripleLisseeIndicator from './MoyenneTripleLissee.js';
+import IndiceBiaisMomentumIndicator from './IndiceBiaisMomentum.js';
+import ForceTendanceSignauxIndicator from './ForceTendanceSignaux.js';
+import ProbabiliteRetournementDureeIndicator from './ProbabiliteRetournementDuree.js';
+import DoublesSommetsCreuxIndicator from './DoublesSommetsCreux.js';
+import RetournementTriniteIndicator from './RetournementTrinite.js';
+import ProfilsOscillationsIndicator from './ProfilsOscillations.js';
+import ProfilProbabiliteRetournementIndicator from './ProfilProbabiliteRetournement.js';
+import TendanceVolumetriqueIndicator from './TendanceVolumetrique.js';
+import VagueTendance3DIndicator from './VagueTendance3D.js';
 
 export const INDICATEURS_MPL = [
   SupportsResistancesVolumeIndicator,
@@ -102,6 +112,16 @@ export const INDICATEURS_MPL = [
   NiveauxClesRegroupementIndicator,
   RetournementsCassuresVolumeIndicator,
   RsiSupertrendIndicator,
+  MoyenneTripleLisseeIndicator,
+  IndiceBiaisMomentumIndicator,
+  ForceTendanceSignauxIndicator,
+  ProbabiliteRetournementDureeIndicator,
+  DoublesSommetsCreuxIndicator,
+  RetournementTriniteIndicator,
+  ProfilsOscillationsIndicator,
+  ProfilProbabiliteRetournementIndicator,
+  TendanceVolumetriqueIndicator,
+  VagueTendance3DIndicator,
 ];
 
 export default INDICATEURS_MPL;

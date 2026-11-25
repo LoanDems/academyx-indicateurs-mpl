@@ -17,12 +17,16 @@ Les fichiers s'appuient sur le moteur de calcul interne de la plateforme (`acade
 - `ClassificationLorentz.js` — « Machine Learning: Lorentzian Classification » © jdehorty — https://www.tradingview.com/script/WhBzgfDu-Machine-Learning-Lorentzian-Classification/
 - `DecalageMoyenne.js` — « Moving Average Shift [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/aApUyBnk-Moving-Average-Shift-ChartPrime/
 - `DivergencesRsiMomentum.js` — « RSI Momentum Divergence Zones [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/x3KNfmR3-RSI-Momentum-Divergence-Zones-ChartPrime/
+- `DoublesSommetsCreux.js` — « Double Top/Bottom [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/53EEupiO-Double-Top-Bottom-AlgoAlpha/
 - `DureeTendance.js` — « Trend Duration Forecast [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/L3SJFfAQ-Trend-Duration-Forecast-ChartPrime/
 - `FibonacciTendance.js` — « Fibonacci Trend [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/Lrpet5VK-Fibonacci-Trend-ChartPrime/
 - `FiltrePlage.js` — « Range Filter [DW] » © DonovanWall — https://www.tradingview.com/script/lut7sBgG-Range-Filter-DW/
+- `ForceTendanceSignaux.js` — « Trend Strength Signals [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/7NIERkQE-Trend-Strength-Signals-AlgoAlpha/
 - `HautBasUniteSuperieure.js` — « Higher Timeframe High & Low [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/foH3S980-Higher-Timeframe-High-Low-ChartPrime/
+- `IndiceBiaisMomentum.js` — « Momentum Bias Index [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/oMZKratR-Momentum-Bias-Index-AlgoAlpha/
 - `MomentumProjection.js` — « Momentum Ghost Machine [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/GGVVdaUk-Momentum-Ghost-Machine-ChartPrime/
 - `MoyenneGaussienneLowess.js` — « LOWESS (Locally Weighted Scatterplot Smoothing) [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/hyeoDyZn-LOWESS-Locally-Weighted-Scatterplot-Smoothing-ChartPrime/
+- `MoyenneTripleLissee.js` — « Triple Smoothed Signals [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/FoMINXVf-Triple-Smoothed-Signals-AlgoAlpha/
 - `NiveauxBascule.js` — « Market Shift Levels [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/urTBALXa-Market-Shift-Levels-ChartPrime/
 - `NiveauxClesRegroupement.js` — « Machine Learning Key Levels [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/fm7TWJSE-Machine-Learning-Key-Levels-AlgoAlpha/
 - `NiveauxHema.js` — « HEMA Trend Levels [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/WClHCU5Q-HEMA-Trend-Levels-AlgoAlpha/
@@ -33,9 +37,13 @@ Les fichiers s'appuient sur le moteur de calcul interne de la plateforme (`acade
 - `ObjectifsRegressionNoyau.js` — « Machine Learning Price Target Prediction Signals [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/3MHPrjD5-Machine-Learning-Price-Target-Prediction-Signals-AlgoAlpha/
 - `OscillateurRegression.js` — « Linear Regression Oscillator [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/MyKmv8br-Linear-Regression-Oscillator-ChartPrime/
 - `PlagesObjectifs.js` — « Ranges With Targets [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/3swrxpw6-Ranges-With-Targets-ChartPrime/
+- `ProbabiliteRetournementDuree.js` — « Trend Reversal Probability [Algoalpha] » © AlgoAlpha — https://www.tradingview.com/script/7gnQovYe-Trend-Reversal-Probability-Algoalpha/
 - `ProfilBougieSuperieure.js` — « HTF Candle Profile [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/5d1au2Dh-HTF-Candle-Profile-ChartPrime/
+- `ProfilProbabiliteRetournement.js` — « Reversal Probability Profile [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/ZWLdxZtM-Reversal-Probability-Profile-AlgoAlpha/
 - `ProfilVolumePivots.js` — « Volume Profile + Pivot Levels [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/KjzRRZIc-Volume-Profile-Pivot-Levels-ChartPrime/
+- `ProfilsOscillations.js` — « Swing Profile Analyzer [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/8S40eYNi-Swing-Profile-Analyzer-ChartPrime/
 - `ProfilsSessions.js` — « Market sessions and Volume profile - By Leviathan » © LeviathanCapital — https://www.tradingview.com/script/tV3rCaJ9-Market-sessions-and-Volume-profile-By-Leviathan/
+- `RetournementTrinite.js` — « Trinity Reversal Pattern [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/tpwLa60j-Trinity-Reversal-Pattern-AlgoAlpha/
 - `RetournementsCassuresVolume.js` — « Reversal and Breakout Signals [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/fpWwOup4-Reversal-and-Breakout-Signals-AlgoAlpha/
 - `RetournementsEscalier.js` — « Reversal Signals [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/htGbg6VL-Reversal-Signals-AlgoAlpha/
 - `RsiParabolique.js` — « Parabolic RSI [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/NI0Qhwy7-Parabolic-RSI-ChartPrime/
@@ -48,7 +56,9 @@ Les fichiers s'appuient sur le moteur de calcul interne de la plateforme (`acade
 - `TendanceObjectifs.js` — « Trend Targets [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/OXsSm5NV-Trend-Targets-AlgoAlpha/
 - `TendanceRayon.js` — « Radius Trend [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/4KIHf36j-Radius-Trend-ChartPrime/
 - `TendanceSansRetard.js` — « Zero Lag Trend Signals (MTF) [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/tHK4O1Fi-Zero-Lag-Trend-Signals-MTF-AlgoAlpha/
+- `TendanceVolumetrique.js` — « Volumatic Trend [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/4lVTa6J4-Volumatic-Trend-ChartPrime/
 - `TendancesObjectifs.js` — « Trendline Breakouts With Targets [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/hb6J9iHI-Trendline-Breakouts-With-Targets-ChartPrime/
+- `VagueTendance3D.js` — « WaveTrend 3D » © jdehorty — https://www.tradingview.com/script/clUzC70G-WaveTrend-3D/
 - `VwapGlissant.js` — « Rolling VWAP » © TradingView — https://www.tradingview.com/script/ZU2UUu9T-Rolling-VWAP/
 - `ZoneBascule.js` — « Zone Shift [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/8lfE3qMN-Zone-Shift-ChartPrime/
 - `ZonesBasculeRsi.js` — « RSI Shift Zone [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/5azMGL1V-RSI-Shift-Zone-ChartPrime/
