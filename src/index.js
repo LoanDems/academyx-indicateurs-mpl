@@ -10,6 +10,16 @@ import OscillateurRegressionIndicator from './OscillateurRegression.js';
 import TendanceSansRetardIndicator from './TendanceSansRetard.js';
 import TendancesObjectifsIndicator from './TendancesObjectifs.js';
 import ProfilsSessionsIndicator from './ProfilsSessions.js';
+import ClassificationLorentzIndicator from './ClassificationLorentz.js';
+import TangentesEllipsesIndicator from './TangentesEllipses.js';
+import ProfilVolumePivotsIndicator from './ProfilVolumePivots.js';
+import DecalageMoyenneIndicator from './DecalageMoyenne.js';
+import CanalGaussienIndicator from './CanalGaussien.js';
+import DureeTendanceIndicator from './DureeTendance.js';
+import NiveauxBasculeIndicator from './NiveauxBascule.js';
+import CassuresObjectifsIndicator from './CassuresObjectifs.js';
+import NiveauxHemaIndicator from './NiveauxHema.js';
+import CanauxSentimentVolumeIndicator from './CanauxSentimentVolume.js';
 
 export const INDICATEURS_MPL = [
   SupportsResistancesVolumeIndicator,
@@ -22,6 +32,16 @@ export const INDICATEURS_MPL = [
   TendanceSansRetardIndicator,
   TendancesObjectifsIndicator,
   ProfilsSessionsIndicator,
+  ClassificationLorentzIndicator,
+  TangentesEllipsesIndicator,
+  ProfilVolumePivotsIndicator,
+  DecalageMoyenneIndicator,
+  CanalGaussienIndicator,
+  DureeTendanceIndicator,
+  NiveauxBasculeIndicator,
+  CassuresObjectifsIndicator,
+  NiveauxHemaIndicator,
+  CanauxSentimentVolumeIndicator,
 ];
 
 export default INDICATEURS_MPL;

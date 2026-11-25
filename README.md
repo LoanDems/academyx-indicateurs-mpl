@@ -7,12 +7,22 @@ Les fichiers s'appuient sur le moteur de calcul interne de la plateforme (`acade
 ## Scripts adaptés
 
 - `CanalForces.js` — « Support and Resistance Power Channel [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/6WDeQiyp-Support-and-Resistance-Power-Channel-ChartPrime/
+- `CanalGaussien.js` — « Gaussian Channel [DW] » © DonovanWall — https://www.tradingview.com/script/WpVY7GKW-Gaussian-Channel-DW/
+- `CanauxSentimentVolume.js` — « Volume Sentiment Breakout Channels [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/t2D9irXp-Volume-Sentiment-Breakout-Channels-AlgoAlpha/
+- `CassuresObjectifs.js` — « Breakout Targets [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/JY7Rjrsi-Breakout-Targets-AlgoAlpha/
+- `ClassificationLorentz.js` — « Machine Learning: Lorentzian Classification » © jdehorty — https://www.tradingview.com/script/WhBzgfDu-Machine-Learning-Lorentzian-Classification/
+- `DecalageMoyenne.js` — « Moving Average Shift [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/aApUyBnk-Moving-Average-Shift-ChartPrime/
+- `DureeTendance.js` — « Trend Duration Forecast [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/L3SJFfAQ-Trend-Duration-Forecast-ChartPrime/
 - `FibonacciTendance.js` — « Fibonacci Trend [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/Lrpet5VK-Fibonacci-Trend-ChartPrime/
+- `NiveauxBascule.js` — « Market Shift Levels [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/urTBALXa-Market-Shift-Levels-ChartPrime/
+- `NiveauxHema.js` — « HEMA Trend Levels [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/WClHCU5Q-HEMA-Trend-Levels-AlgoAlpha/
 - `NiveauxMoyenneSansRetard.js` — « Zero-Lag MA Trend Levels [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/pP2FhzAX-Zero-Lag-MA-Trend-Levels-ChartPrime/
 - `OscillateurRegression.js` — « Linear Regression Oscillator [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/MyKmv8br-Linear-Regression-Oscillator-ChartPrime/
+- `ProfilVolumePivots.js` — « Volume Profile + Pivot Levels [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/KjzRRZIc-Volume-Profile-Pivot-Levels-ChartPrime/
 - `ProfilsSessions.js` — « Market sessions and Volume profile - By Leviathan » © LeviathanCapital — https://www.tradingview.com/script/tV3rCaJ9-Market-sessions-and-Volume-profile-By-Leviathan/
 - `SupertrendVolatilite.js` — « Machine Learning Adaptive SuperTrend [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/CLk71Qgy-Machine-Learning-Adaptive-SuperTrend-AlgoAlpha/
 - `SupportsResistancesVolume.js` — « Support and Resistance (High Volume Boxes) [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/Uz2AJ0i4-Support-and-Resistance-High-Volume-Boxes-ChartPrime/
+- `TangentesEllipses.js` — « Ghost Tangent Crossings [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/F2vJnCdI-Ghost-Tangent-Crossings-ChartPrime/
 - `TendanceObjectifs.js` — « Trend Targets [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/OXsSm5NV-Trend-Targets-AlgoAlpha/
 - `TendanceSansRetard.js` — « Zero Lag Trend Signals (MTF) [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/tHK4O1Fi-Zero-Lag-Trend-Signals-MTF-AlgoAlpha/
 - `TendancesObjectifs.js` — « Trendline Breakouts With Targets [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/hb6J9iHI-Trendline-Breakouts-With-Targets-ChartPrime/
