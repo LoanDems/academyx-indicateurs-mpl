@@ -40,6 +40,16 @@ import CassuresStopSuiveurIndicator from './CassuresStopSuiveur.js';
 import RetournementsEscalierIndicator from './RetournementsEscalier.js';
 import HautBasUniteSuperieureIndicator from './HautBasUniteSuperieure.js';
 import MomentumProjectionIndicator from './MomentumProjection.js';
+import BoitesCassureIndicator from './BoitesCassure.js';
+import ProfilBougieSuperieureIndicator from './ProfilBougieSuperieure.js';
+import VwapGlissantIndicator from './VwapGlissant.js';
+import ZscoreStochastiqueIndicator from './ZscoreStochastique.js';
+import ZonesSupportResistanceIndicator from './ZonesSupportResistance.js';
+import ZonesBasculeRsiIndicator from './ZonesBasculeRsi.js';
+import TendanceBayesienneIndicator from './TendanceBayesienne.js';
+import NiveauxClesRegroupementIndicator from './NiveauxClesRegroupement.js';
+import RetournementsCassuresVolumeIndicator from './RetournementsCassuresVolume.js';
+import RsiSupertrendIndicator from './RsiSupertrend.js';
 
 export const INDICATEURS_MPL = [
   SupportsResistancesVolumeIndicator,
@@ -82,6 +92,16 @@ export const INDICATEURS_MPL = [
   RetournementsEscalierIndicator,
   HautBasUniteSuperieureIndicator,
   MomentumProjectionIndicator,
+  BoitesCassureIndicator,
+  ProfilBougieSuperieureIndicator,
+  VwapGlissantIndicator,
+  ZscoreStochastiqueIndicator,
+  ZonesSupportResistanceIndicator,
+  ZonesBasculeRsiIndicator,
+  TendanceBayesienneIndicator,
+  NiveauxClesRegroupementIndicator,
+  RetournementsCassuresVolumeIndicator,
+  RsiSupertrendIndicator,
 ];
 
 export default INDICATEURS_MPL;

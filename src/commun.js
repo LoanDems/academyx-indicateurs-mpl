@@ -147,8 +147,35 @@ export function signaux(data, vrai) {
   return out;
 }
 
+// Canaux d'une couleur, memorises (lecture seule : le tableau rendu est partage). Les couleurs
+// constantes des reglages reviennent a chaque barre ; une table bornee evite de les relire.
+const CANAUX = new Map();
+/**
+ * Plusieurs alertcondition() dans UNE sortie cachee : valeur = masque des conditions vraies
+ * (bit k pour la liste k), null si aucune. Une sortie de 20 000 points au lieu d'une par
+ * condition. Condition d'alerte associee : `bit(k)`.
+ */
+export function masque(data, listes) {
+  const out = new Array(data.length);
+  for (let i = 0; i < data.length; i++) {
+    let m = 0;
+    for (let k = 0; k < listes.length; k++) if (listes[k][i]) m |= 1 << k;
+    out[i] = { time: data[i].time, value: m === 0 ? null : m };
+  }
+  return out;
+}
+export const bit = (k) => (pt) => pt.value !== null && pt.value !== undefined && (pt.value & (1 << k)) !== 0;
+
 const canaux = (c) => {
   if (typeof c !== 'string') return null;
+  let r = CANAUX.get(c);
+  if (r !== undefined) return r;
+  r = lireCanaux(c);
+  if (CANAUX.size >= 4096) CANAUX.clear();
+  CANAUX.set(c, r);
+  return r;
+};
+const lireCanaux = (c) => {
   let m = c.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})?$/i);
   if (m) return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16), m[4] ? parseInt(m[4], 16) / 255 : 1];
   m = c.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)/);
