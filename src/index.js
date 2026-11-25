@@ -30,6 +30,16 @@ import PlagesObjectifsIndicator from './PlagesObjectifs.js';
 import CanalTendanceFuturIndicator from './CanalTendanceFutur.js';
 import NotationTechniqueIndicator from './NotationTechnique.js';
 import CanauxFiguresIndicator from './CanauxFigures.js';
+import NiveauxRetestesIndicator from './NiveauxRetestes.js';
+import FiltrePlageIndicator from './FiltrePlage.js';
+import MoyenneGaussienneLowessIndicator from './MoyenneGaussienneLowess.js';
+import SommetsCreuxSwingIndicator from './SommetsCreuxSwing.js';
+import ZoneBasculeIndicator from './ZoneBascule.js';
+import ObjectifsRegressionNoyauIndicator from './ObjectifsRegressionNoyau.js';
+import CassuresStopSuiveurIndicator from './CassuresStopSuiveur.js';
+import RetournementsEscalierIndicator from './RetournementsEscalier.js';
+import HautBasUniteSuperieureIndicator from './HautBasUniteSuperieure.js';
+import MomentumProjectionIndicator from './MomentumProjection.js';
 
 export const INDICATEURS_MPL = [
   SupportsResistancesVolumeIndicator,
@@ -62,6 +72,16 @@ export const INDICATEURS_MPL = [
   CanalTendanceFuturIndicator,
   NotationTechniqueIndicator,
   CanauxFiguresIndicator,
+  NiveauxRetestesIndicator,
+  FiltrePlageIndicator,
+  MoyenneGaussienneLowessIndicator,
+  SommetsCreuxSwingIndicator,
+  ZoneBasculeIndicator,
+  ObjectifsRegressionNoyauIndicator,
+  CassuresStopSuiveurIndicator,
+  RetournementsEscalierIndicator,
+  HautBasUniteSuperieureIndicator,
+  MomentumProjectionIndicator,
 ];
 
 export default INDICATEURS_MPL;
