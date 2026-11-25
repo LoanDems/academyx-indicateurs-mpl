@@ -20,6 +20,16 @@ import NiveauxBasculeIndicator from './NiveauxBascule.js';
 import CassuresObjectifsIndicator from './CassuresObjectifs.js';
 import NiveauxHemaIndicator from './NiveauxHema.js';
 import CanauxSentimentVolumeIndicator from './CanauxSentimentVolume.js';
+import TendanceRayonIndicator from './TendanceRayon.js';
+import NiveauxTendanceIndicator from './NiveauxTendance.js';
+import RsiParaboliqueIndicator from './RsiParabolique.js';
+import DivergencesRsiMomentumIndicator from './DivergencesRsiMomentum.js';
+import ZonesLiquidationIndicator from './ZonesLiquidation.js';
+import ZonesOffreDemandeIndicator from './ZonesOffreDemande.js';
+import PlagesObjectifsIndicator from './PlagesObjectifs.js';
+import CanalTendanceFuturIndicator from './CanalTendanceFutur.js';
+import NotationTechniqueIndicator from './NotationTechnique.js';
+import CanauxFiguresIndicator from './CanauxFigures.js';
 
 export const INDICATEURS_MPL = [
   SupportsResistancesVolumeIndicator,
@@ -42,6 +52,16 @@ export const INDICATEURS_MPL = [
   CassuresObjectifsIndicator,
   NiveauxHemaIndicator,
   CanauxSentimentVolumeIndicator,
+  TendanceRayonIndicator,
+  NiveauxTendanceIndicator,
+  RsiParaboliqueIndicator,
+  DivergencesRsiMomentumIndicator,
+  ZonesLiquidationIndicator,
+  ZonesOffreDemandeIndicator,
+  PlagesObjectifsIndicator,
+  CanalTendanceFuturIndicator,
+  NotationTechniqueIndicator,
+  CanauxFiguresIndicator,
 ];
 
 export default INDICATEURS_MPL;
