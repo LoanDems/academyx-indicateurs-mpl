@@ -258,7 +258,7 @@ export default class PrevisionMonteCarloIndicator {
     const v = Number(p.debut);
     // Heure de depart vide : `Barres` bougies avant la derniere.
     const debut = p.debut !== null && p.debut !== undefined && p.debut !== '' && Number.isFinite(v) ? v
-      : data[Math.max(1, data.length - p.barres)].time * 1000;
+      : data[Math.min(data.length - 1, Math.max(1, data.length - p.barres))].time * 1000;   // une seule bougie : la premiere
     return executer(PrevisionMonteCarloIndicator._memo, JSON.stringify([p, debut]), data, {
       creer: () => creer(p, debut),
       etape: (e, d, i, derniere) => etape(p, e, d, i, derniere),

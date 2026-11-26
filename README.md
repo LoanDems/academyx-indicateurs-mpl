@@ -10,6 +10,7 @@ Les fichiers s'appuient sur le moteur de calcul interne de la plateforme (`acade
 - `CanalFluxVolume.js` — « Volume Channel Flow [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/U8Xy7qJ2-Volume-Channel-Flow-ChartPrime/
 - `CanalForces.js` — « Support and Resistance Power Channel [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/6WDeQiyp-Support-and-Resistance-Power-Channel-ChartPrime/
 - `CanalGaussien.js` — « Gaussian Channel [DW] » © DonovanWall — https://www.tradingview.com/script/WpVY7GKW-Gaussian-Channel-DW/
+- `CanalPivotsElan.js` — « Step Channel Momentum Trend [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/AsD2fDh7-Step-Channel-Momentum-Trend-ChartPrime/
 - `CanalRegressionFiltre.js` — « Regression Channel [DW] » © DonovanWall — https://www.tradingview.com/script/xnMdv0lA-Regression-Channel-DW/
 - `CanalRegressionPolynomiale.js` — « Polynomial Regression Channel [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/F7duegmG-Polynomial-Regression-Channel-ChartPrime/
 - `CanalTendanceFutur.js` — « Future Trend Channel [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/facvguC8-Future-Trend-Channel-ChartPrime/
@@ -26,6 +27,7 @@ Les fichiers s'appuient sur le moteur de calcul interne de la plateforme (`acade
 - `FibonacciTendance.js` — « Fibonacci Trend [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/Lrpet5VK-Fibonacci-Trend-ChartPrime/
 - `FiltreKalmanVolume.js` — « Kalman Volume Filter [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/lCceGyMY-Kalman-Volume-Filter-ChartPrime/
 - `FiltrePlage.js` — « Range Filter [DW] » © DonovanWall — https://www.tradingview.com/script/lut7sBgG-Range-Filter-DW/
+- `FiltreTendanceDegrade.js` — « Gradient Trend Filter [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/ou0PETsS-Gradient-Trend-Filter-ChartPrime/
 - `ForceTendanceSignaux.js` — « Trend Strength Signals [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/7NIERkQE-Trend-Strength-Signals-AlgoAlpha/
 - `HautBasUniteSuperieure.js` — « Higher Timeframe High & Low [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/foH3S980-Higher-Timeframe-High-Low-ChartPrime/
 - `IndiceBiaisMomentum.js` — « Momentum Bias Index [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/oMZKratR-Momentum-Bias-Index-AlgoAlpha/
@@ -42,6 +44,7 @@ Les fichiers s'appuient sur le moteur de calcul interne de la plateforme (`acade
 - `NiveauxRetestes.js` — « Retest Support Resistance Signals [ChartPrime] » (titre du script : « Support/Resistance Re-test Finder [ChartPrime] ») © ChartPrime — https://www.tradingview.com/script/E4joH77u-Retest-Support-Resistance-Signals-ChartPrime/
 - `NiveauxTendance.js` — « Trend Levels [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/bacXsRFN-Trend-Levels-ChartPrime/
 - `NotationTechnique.js` — « Technical Ratings » © TradingView — https://www.tradingview.com/script/Jdw7wW2g-Technical-Ratings/
+- `NoyauRationnelQuadratique.js` — « Nadaraya-Watson: Rational Quadratic Kernel (Non-Repainting) » © jdehorty — https://www.tradingview.com/script/AWNvbPRM-Nadaraya-Watson-Rational-Quadratic-Kernel-Non-Repainting/
 - `NuageTendanceRetests.js` — « Specter Trend Cloud [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/x6Ll0NOu-Specter-Trend-Cloud-ChartPrime/
 - `ObjectifsRegressionNoyau.js` — « Machine Learning Price Target Prediction Signals [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/3MHPrjD5-Machine-Learning-Price-Target-Prediction-Signals-AlgoAlpha/
 - `OscillateurIchimoku.js` — « Ichimoku Oscillator With Divergences [ChartPrime] » (titre du script : « Ichimoku Oscillator [ChartPrime] ») © ChartPrime — https://www.tradingview.com/script/y3NTW7he-Ichimoku-Oscillator-With-Divergences-ChartPrime/
@@ -70,7 +73,9 @@ Les fichiers s'appuient sur le moteur de calcul interne de la plateforme (`acade
 - `SupportsResistancesVolume.js` — « Support and Resistance (High Volume Boxes) [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/Uz2AJ0i4-Support-and-Resistance-High-Volume-Boxes-ChartPrime/
 - `TangentesEllipses.js` — « Ghost Tangent Crossings [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/F2vJnCdI-Ghost-Tangent-Crossings-ChartPrime/
 - `TendanceBayesienne.js` — « Bayesian Trend Indicator [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/rVEhAQDO-Bayesian-Trend-Indicator-ChartPrime/
+- `TendanceCciAtr.js` — « Trend Magic Enhanced [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/64xgEdlW-Trend-Magic-Enhanced-AlgoAlpha/
 - `TendanceObjectifs.js` — « Trend Targets [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/OXsSm5NV-Trend-Targets-AlgoAlpha/
+- `TendancePivotsAtr.js` — « Pivot Trend [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/AOTPWbpq-Pivot-Trend-ChartPrime/
 - `TendanceRayon.js` — « Radius Trend [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/4KIHf36j-Radius-Trend-ChartPrime/
 - `TendanceSansRetard.js` — « Zero Lag Trend Signals (MTF) [AlgoAlpha] » © AlgoAlpha — https://www.tradingview.com/script/tHK4O1Fi-Zero-Lag-Trend-Signals-MTF-AlgoAlpha/
 - `TendancesObjectifs.js` — « Trendline Breakouts With Targets [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/hb6J9iHI-Trendline-Breakouts-With-Targets-ChartPrime/

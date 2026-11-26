@@ -80,6 +80,11 @@ import RsiInverseBornesIndicator from './RsiInverseBornes.js';
 import MonteCarloMouvementsIndicator from './MonteCarloMouvements.js';
 import SupertrendContexteSortiesIndicator from './SupertrendContexteSorties.js';
 import PrevisionMonteCarloIndicator from './PrevisionMonteCarlo.js';
+import TendanceCciAtrIndicator from './TendanceCciAtr.js';
+import TendancePivotsAtrIndicator from './TendancePivotsAtr.js';
+import CanalPivotsElanIndicator from './CanalPivotsElan.js';
+import NoyauRationnelQuadratiqueIndicator from './NoyauRationnelQuadratique.js';
+import FiltreTendanceDegradeIndicator from './FiltreTendanceDegrade.js';
 
 export const INDICATEURS_MPL = [
   SupportsResistancesVolumeIndicator,
@@ -162,6 +167,11 @@ export const INDICATEURS_MPL = [
   MonteCarloMouvementsIndicator,
   SupertrendContexteSortiesIndicator,
   PrevisionMonteCarloIndicator,
+  TendanceCciAtrIndicator,
+  TendancePivotsAtrIndicator,
+  CanalPivotsElanIndicator,
+  NoyauRationnelQuadratiqueIndicator,
+  FiltreTendanceDegradeIndicator,
 ];
 
 export default INDICATEURS_MPL;
