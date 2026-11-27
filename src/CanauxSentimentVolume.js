@@ -17,8 +17,11 @@ const INPUTS = [
 ];
 const RES = 20, ECHELLE = 30;
 const nb = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
-const maxNa = (t) => { let m = null; for (const v of t) if (v !== null && (m === null || v > m)) m = v; return m; };
-const minNa = (t) => { let m = null; for (const v of t) if (v !== null && (m === null || v < m)) m = v; return m; };
+const maxNa = (t) => { let m = null; for (let k = 0; k < t.length; k++) { const v = t[k]; if (v !== null && (m === null || v > m)) m = v; } return m; };
+const minNa = (t) => { let m = null; for (let k = 0; k < t.length; k++) { const v = t[k]; if (v !== null && (m === null || v < m)) m = v; } return m; };
+// [PERF 2026-11-26] Volume maximal d'un profil, lu une fois (teinte() le relisait pour chacune
+// des 20 rangees) ; le profil est un objet local, rendu par profil() a chaque appel.
+const maxVol = (prof) => (prof._mx === undefined ? (prof._mx = maxNa(prof.vol)) : prof._mx);
 const pct = (v) => (Number.isFinite(v) ? `${tostring(v, '0.00')}%` : 'NaN');
 const flottant = (v) => (Number.isFinite(v) ? tostring(v, '#.##########') : 'NaN');
 
@@ -83,7 +86,7 @@ function etape(p, e, d, i, derniere, s, env) {
   const o = e.o, b = d[i], S = e.sorties, vola = s.vola[i];
   const g90 = transparence(p.couleurHausse, 90), r90 = transparence(p.couleurBaisse, 90);
   const teinte = (r, prof) => {
-    const mx = maxNa(prof.vol);
+    const mx = maxVol(prof);
     return prof.signe[r] !== null && prof.signe[r] > 0 ? degrade(prof.vol[r], 0, mx, g90, p.couleurHausse) : degrade(prof.vol[r], 0, mx, r90, p.couleurBaisse);
   };
   const textes = (c, prof, cy, double) => {
@@ -94,7 +97,8 @@ function etape(p, e, d, i, derniere, s, env) {
     const maxAbs = Math.max(Math.abs(mxS), Math.abs(mnS));
     const cur = prof.signe[k];
     const valeur = cur / maxAbs * 100;
-    const sentiment = `Sentiment actuel : ${double ? `${pct(valeur)}%` : `${flottant(valeur)}%`}`;
+    // [FIX 2026-11-26] pct() porte deja son « % » : le script en ajoutait un second (« 12.34%% »).
+    const sentiment = `Sentiment actuel : ${double ? pct(valeur) : `${flottant(valeur)}%`}`;
     let somme = 0;
     for (let r = 0; r < RES; r++) somme += prof.signe[r];
     const global = `Sentiment global : ${somme > 0 ? 'haussier' : 'baissier'}`;
@@ -150,7 +154,7 @@ function etape(p, e, d, i, derniere, s, env) {
     const g = c.boite.gauche;
     const prof = profil(d, i, g, i, c.boite.haut, c.boite.bas);
     const mxS = maxNa(prof.signe), mnS = minNa(prof.signe), maxAbs = Math.max(Math.abs(mxS), Math.abs(mnS));
-    const mxV = maxNa(prof.vol);
+    const mxV = maxVol(prof);
     for (let r = 0; r < RES; r++) {
       const droite = i + 7 + ECHELLE;
       const gauche = prof.vol[r] === null ? null : droite - Math.round(prof.vol[r]) / Math.round(mxV) * ECHELLE;
@@ -165,7 +169,10 @@ function etape(p, e, d, i, derniere, s, env) {
         const tr = Math.trunc(100 - Math.round(ratio * 100));
         const cc = degrade(tr, 0, 100, sv !== null && sv > 0 ? p.couleurHausse : p.couleurBaisse, env.fond);
         st.fond = cc; st.couleurBordure = cc;
-        st.texte = pct(100 * Math.abs(sv) / Math.abs(mxS));
+        // [FIX 2026-11-26] rapporte au plus grand |sentiment| (comme la teinte juste au-dessus) :
+        // le script divisait par le plus grand sentiment SIGNE, d'ou des parts au-dela de 100 %
+        // des qu'une rangee baissiere l'emportait (ecart volontaire).
+        st.texte = pct(100 * Math.abs(sv) / maxAbs);
       }
       if (r === RES - 1) { const x1 = Math.trunc(gL - (gR - gL) * 0.15); for (const x of [c.milieu, c.l1, c.l2, c.l3, c.l4]) x.x1 = x1; }
     }
