@@ -76,6 +76,57 @@ function score(agg, cur, B) {
   return pic > 0 ? 100.0 * bc[cur] / pic : null;
 }
 
+/**
+ * Scores d'une barre close, egaux a score(agg[a], cases[a], B) des listes de la derniere
+ * barre : un seul passage sur l'historique. La valeur k entre dans la liste de l'axe a si
+ * tous les AUTRES axes actifs ont la case de la barre : 0 ecart sur tous les axes actifs =
+ * tous les axes la prennent, un seul ecart (axe q) = seul l'axe q la prend. Un autre axe
+ * actif sans case (na) exclut l'axe a. Les cases des valeurs relevees sont deja dans
+ * pool[4 + a] (meme formule que score()) ; une valeur non nulle sans case (NaN) compte
+ * dans la longueur de la liste mais dans aucune case, comme avant.
+ */
+const COMPTES = [[], [], [], []];
+function scoresCompte(pool, hN, cases, actifs, B) {
+  const sc = [null, null, null, null];
+  if (hN === 0) return sc;
+  const n = [0, 0, 0, 0], exclu = [false, false, false, false];
+  for (let a = 0; a < 4; a++) {
+    if (!actifs[a]) continue;
+    for (let q = 0; q < 4; q++) if (q !== a && actifs[q] && nul(cases[q])) { exclu[a] = true; break; }
+    const c = COMPTES[a];
+    c.length = B;
+    c.fill(0);
+  }
+  const A0 = actifs[0], A1 = actifs[1], A2 = actifs[2], A3 = actifs[3];
+  const K0 = cases[0], K1 = cases[1], K2 = cases[2], K3 = cases[3];
+  const P4 = pool[4], P5 = pool[5], P6 = pool[6], P7 = pool[7];
+  for (let k = 0; k < hN; k++) {
+    let ecarts = 0, q0 = -1;
+    if (A0 && P4[k] !== K0) { ecarts++; q0 = 0; }
+    if (A1 && P5[k] !== K1) { ecarts++; q0 = 1; }
+    if (ecarts > 1) continue;
+    if (A2 && P6[k] !== K2) { ecarts++; q0 = 2; }
+    if (ecarts > 1) continue;
+    if (A3 && P7[k] !== K3) { ecarts++; q0 = 3; }
+    if (ecarts > 1) continue;
+    for (let a = 0; a < 4; a++) {
+      if (!actifs[a] || exclu[a] || (ecarts === 1 && a !== q0)) continue;
+      if (pool[a][k] === null) continue;
+      n[a]++;
+      const c = pool[4 + a][k];
+      if (c !== null) COMPTES[a][c]++;
+    }
+  }
+  for (let a = 0; a < 4; a++) {
+    if (!actifs[a] || n[a] === 0 || nul(cases[a])) continue;
+    const bc = COMPTES[a];
+    let pic = bc[0];
+    for (let q = 0; q < B; q++) if (bc[q] > pic) pic = bc[q];
+    sc[a] = pic > 0 ? 100.0 * bc[cases[a]] / pic : null;
+  }
+  return sc;
+}
+
 function etape(p, e, d, i, derniere, env) {
   const S = e.sorties, o = e.o, b = d[i], B = p.cases, zz = p.pivot;
   // ta.supertrend(facteur, periode) : bandes hl2 +/- facteur x ATR, comme academyscript/ta.js.
@@ -134,31 +185,36 @@ function etape(p, e, d, i, derniere, env) {
   const actifs = [p.axeVolume, p.axeHeure && valide, p.axePlage, persoActif];
   const pool = !nul(dir) && dir < 0 ? e.bull : !nul(dir) && dir > 0 ? e.bear : null;
   const hN = pool ? pool[0].length : 0;
-  const agg = [[], [], [], []];
-  for (let a = 0; a < 4; a++) {
-    if (!actifs[a] || hN === 0) continue;
-    // Autres axes actifs : la case de la valeur relevee doit etre celle de la barre (valeur na ou case na : rejet).
-    const autres = [];
-    for (let q = 0; q < 4; q++) if (q !== a && actifs[q]) { if (nul(cases[q])) { autres.length = 0; autres.push(-1); break; } autres.push(q); }
-    if (autres[0] === -1) continue;
-    const V = pool[a], C0 = autres.length > 0 ? pool[4 + autres[0]] : null, C1 = autres.length > 1 ? pool[4 + autres[1]] : null, C2 = autres.length > 2 ? pool[4 + autres[2]] : null;
-    const k0 = C0 ? cases[autres[0]] : 0, k1 = C1 ? cases[autres[1]] : 0, k2 = C2 ? cases[autres[2]] : 0;
-    for (let k = 0; k < hN; k++) {
-      const v = V[k];
-      if (v === null) continue;
-      if (C0 && C0[k] !== k0) continue;
-      if (C1 && C1[k] !== k1) continue;
-      if (C2 && C2[k] !== k2) continue;
-      agg[a].push(v);
+  // [PERF 2026-11-26] Barre close : les distributions ne servent qu'au score ; il est
+  // compte en un seul passage sur l'historique (cases deja calculees), sans construire les
+  // listes. La derniere barre garde le calcul d'origine : ses listes sont dessinees.
+  const agg = derniere ? [[], [], [], []] : null;
+  const sc = derniere ? [null, null, null, null] : scoresCompte(pool, hN, cases, actifs, B);
+  if (derniere) {
+    for (let a = 0; a < 4; a++) {
+      if (!actifs[a] || hN === 0) continue;
+      // Autres axes actifs : la case de la valeur relevee doit etre celle de la barre (valeur na ou case na : rejet).
+      const autres = [];
+      for (let q = 0; q < 4; q++) if (q !== a && actifs[q]) { if (nul(cases[q])) { autres.length = 0; autres.push(-1); break; } autres.push(q); }
+      if (autres[0] === -1) continue;
+      const V = pool[a], C0 = autres.length > 0 ? pool[4 + autres[0]] : null, C1 = autres.length > 1 ? pool[4 + autres[1]] : null, C2 = autres.length > 2 ? pool[4 + autres[2]] : null;
+      const k0 = C0 ? cases[autres[0]] : 0, k1 = C1 ? cases[autres[1]] : 0, k2 = C2 ? cases[autres[2]] : 0;
+      for (let k = 0; k < hN; k++) {
+        const v = V[k];
+        if (v === null) continue;
+        if (C0 && C0[k] !== k0) continue;
+        if (C1 && C1[k] !== k1) continue;
+        if (C2 && C2[k] !== k2) continue;
+        agg[a].push(v);
+      }
     }
+    if (hN > 0) for (let a = 0; a < 4; a++) if (actifs[a]) sc[a] = score(agg[a], cases[a], B);
   }
-  const sc = [null, null, null, null];
   let cs = null;
   if (hN > 0) {
     let somme = 0.0, n = 0;
     for (let a = 0; a < 4; a++) {
       if (!actifs[a]) continue;
-      sc[a] = score(agg[a], cases[a], B);
       if (!nul(sc[a])) { somme += sc[a] / 100.0; n += 1; }
     }
     if (n > 0) cs = 100.0 * somme / n;
