@@ -104,6 +104,11 @@ const ALERTES = [
 // croisements : [a, b, sens] dans l'ordre des alertes 1..23 (les memes paires servent au rebond)
 const CROIS = ['sigKmin+', 'sigKmax-', 'sigKmax+', 'sigKmin-', 'kab+', 'kab-', 'kabo+', 'kabo-', 'cb+', 'cb-', 'sigCbMax+', 'sigCbMin-', 'ch0+', 'ch0-',
   'sigMax+', 'sigHigh+', 'sigMin-', 'sigLow-', 'chMax+', 'chHigh+', 'chMin-', 'chLow-', 'sigMa+', 'sigMa-'];
+// [PERF 2026-11-26] Paires des croisements par index (plus d'objet ni de chaines par barre).
+const PAIRES = ['sigKmin', 'sigKmax', 'kab', 'kabo', 'cb', 'sigCbMax', 'sigCbMin', 'ch0', 'sigMax', 'sigHigh', 'sigMin', 'sigLow', 'chMax', 'chHigh', 'chMin', 'chLow', 'sigMa'];
+const PAIRE_DE = CROIS.map((c) => PAIRES.indexOf(c.slice(0, -1)));
+const PA = new Array(PAIRES.length), PB = new Array(PAIRES.length), XV = new Array(CROIS.length);
+const SERIES_ETAT = ['ka', 'kb', 'ctr', 'src', 'minL', 'maxL', 'ns', 'sq', 'kAs', 'kBs', 'kCs', 'out'];
 
 function creer(p, S) {
   const L = p.lissage, a = cosh(1 / L * acosh(1 / (1 - 0.5))), b = sinh(1 / L * asinh(1 / 0.5));
@@ -159,7 +164,7 @@ function pivot(H, i, gauche, droite, haut) {
 
 function etape(p, e, d, i, derniere, env) {
   const S = e.sorties, m = e.m, b = d[i], src = choix[p.source](b), D = p.decalage - 1;
-  for (const k of ['ka', 'kb', 'ctr', 'src', 'minL', 'maxL', 'ns', 'sq', 'kAs', 'kBs', 'kCs', 'out']) if (!S[k]) S[k] = [];
+  for (let q = 0; q < SERIES_ETAT.length; q++) { const k = SERIES_ETAT[q]; if (!S[k]) S[k] = []; }
   if (!S.v) S.v = {};
   const don = (L) => {
     if (i < L - 1) return null;
@@ -217,18 +222,19 @@ function etape(p, e, d, i, derniere, env) {
   const cbCol = !nul(nSig) && !nul(kMax) && nSig >= kMax ? (cbCond ? p.couleurConversionHausse : p.couleurBaseHausse)
     : !nul(nSig) && !nul(kMin) && nSig <= kMin ? (cbCond ? p.couleurConversionBaisse : p.couleurBaseBaisse) : p.couleurNeutre;
   const mainCol = p.couleurParConversion ? cbCol : p.couleurSignal;
-  const X = {};
-  const paire = { sigKmin: [nSig, kMin], sigKmax: [nSig, kMax], kab: [ka, kb], kabo: [kaO, kbO], cb: [nConv, nBase], sigCbMax: [nSig, cbMax], sigCbMin: [nSig, cbMin],
-    ch0: [nCh, 0], sigMax: [nSig, nMax], sigHigh: [nSig, nHigh], sigMin: [nSig, nMin], sigLow: [nSig, nLow], chMax: [nCh, nMax], chHigh: [nCh, nHigh],
-    chMin: [nCh, nMin], chLow: [nCh, nLow], sigMa: [nSig, nMa] };
-  for (const c of CROIS) { const [a, bb] = paire[c.slice(0, -1)]; X[c] = pas(S, m.x[c], i, a, bb); }
+  PA[0] = nSig; PB[0] = kMin; PA[1] = nSig; PB[1] = kMax; PA[2] = ka; PB[2] = kb; PA[3] = kaO; PB[3] = kbO; PA[4] = nConv; PB[4] = nBase;
+  PA[5] = nSig; PB[5] = cbMax; PA[6] = nSig; PB[6] = cbMin; PA[7] = nCh; PB[7] = 0; PA[8] = nSig; PB[8] = nMax; PA[9] = nSig; PB[9] = nHigh;
+  PA[10] = nSig; PB[10] = nMin; PA[11] = nSig; PB[11] = nLow; PA[12] = nCh; PB[12] = nMax; PA[13] = nCh; PB[13] = nHigh;
+  PA[14] = nCh; PB[14] = nMin; PA[15] = nCh; PB[15] = nLow; PA[16] = nSig; PB[16] = nMa;
+  // XV[q] = croisement CROIS[q] (0 sigKmin+, 1 sigKmax-, 2 sigKmax+, 3 sigKmin-, 4 kab+ ... 23 sigMa-).
+  for (let q = 0; q < CROIS.length; q++) { const j = PAIRE_DE[q]; XV[q] = pas(S, m.x[CROIS[q]], i, PA[j], PB[j]); }
   let rebondHaut = false, rebondBas = false;
-  if (X['sigKmax-'] && e.drapeau === 0) e.drapeau = 1;
-  if (X['sigKmin-'] && e.drapeau === 1) e.drapeau = 0;
-  if (X['sigKmin+'] && e.drapeau === 0) e.drapeau = -1;
-  if (X['sigKmin+'] && e.drapeau === -1) e.drapeau = 0;
-  if (X['sigKmax+'] && e.drapeau === 1) { rebondHaut = true; e.drapeau = 0; }
-  if (X['sigKmin-'] && e.drapeau === -1) { rebondBas = true; e.drapeau = 0; }
+  if (XV[1] && e.drapeau === 0) e.drapeau = 1;
+  if (XV[3] && e.drapeau === 1) e.drapeau = 0;
+  if (XV[0] && e.drapeau === 0) e.drapeau = -1;
+  if (XV[0] && e.drapeau === -1) e.drapeau = 0;
+  if (XV[2] && e.drapeau === 1) { rebondHaut = true; e.drapeau = 0; }
+  if (XV[3] && e.drapeau === -1) { rebondBas = true; e.drapeau = 0; }
 
   // Sorties (valeurs et couleurs par barre ; le nuage est decale de `off` barres).
   const V = S.v, put = (k, v) => { (V[k] || (V[k] = []))[i] = v; };
@@ -275,11 +281,19 @@ function etape(p, e, d, i, derniere, env) {
   if (rbe) { o.ligne({ x1: e.lbei, y1: e.lbe, x2: e.cbei, y2: e.cbe, epaisseur: 2, couleur: p.couleurDivBaissiere }); etiq(yB, 'Baissière', p.couleurDivBaissiere, stB); }
   if (hbe) { o.ligne({ x1: e.lhbei, y1: e.lhbe, x2: e.chbei, y2: e.chbe, epaisseur: 2, couleur: p.couleurDivBaissiereCachee }); etiq(yB, 'Baissière cachée', p.couleurDivBaissiereCachee, stB); }
 
-  const al = [X['sigKmin+'] || X['sigKmax-'], X['sigKmax+'], X['sigKmin-'], X['kab+'], X['kab-'], X['kabo+'], X['kabo-'], X['cb+'], X['cb-'], X['sigCbMax+'], X['sigCbMin-'],
-    X['ch0+'], X['ch0-'], X['sigMax+'], X['sigHigh+'], X['sigMin-'], X['sigLow-'], X['chMax+'], X['chHigh+'], X['chMin-'], X['chLow-'], X['sigMa+'], X['sigMa-'],
-    rb, hb, rbe, hbe, rebondHaut, rebondBas];
+  // Meme masque qu'avant : bit 0 = sigKmin+ ou sigKmax-, 1 = sigKmax+, 2 = sigKmin-, 3..22 =
+  // kab+ .. sigMa- (XV[4..23]), puis divergences et rebonds (23..28).
   let msk = 0;
-  for (let k = 0; k < al.length; k++) if (al[k]) msk |= 1 << k;
+  if (XV[0] || XV[1]) msk |= 1;
+  if (XV[2]) msk |= 1 << 1;
+  if (XV[3]) msk |= 1 << 2;
+  for (let q = 4; q < 24; q++) if (XV[q]) msk |= 1 << (q - 1);
+  if (rb) msk |= 1 << 23;
+  if (hb) msk |= 1 << 24;
+  if (rbe) msk |= 1 << 25;
+  if (hbe) msk |= 1 << 26;
+  if (rebondHaut) msk |= 1 << 27;
+  if (rebondBas) msk |= 1 << 28;
   S.out[i] = msk;
 }
 
