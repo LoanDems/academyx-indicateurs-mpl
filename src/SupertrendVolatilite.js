@@ -48,24 +48,29 @@ const plusPetit = (a, b) => a !== null && b !== null && a < b;
  * sommes de la plus recente a la plus ancienne, ordre des tableaux du script.
  */
 function regrouper(vol, i, n, depart) {
-  let c0 = depart[0], c1 = depart[1], c2 = depart[2], tailles = [0, 0, 0];
+  let c0 = depart[0], c1 = depart[1], c2 = depart[2], n0 = 0, n1 = 0, n2 = 0;
+  // [PERF 2026-11-26] plusPetit() deroule : une distance est na exactement quand son centre
+  // l'est (v n'est jamais na ici). Memes comparaisons, memes sommes, dans le meme ordre.
   for (let it = 0; it < ITERATIONS_MAX; it++) {
-    let s0 = 0, s1 = 0, s2 = 0, n0 = 0, n1 = 0, n2 = 0;
+    let s0 = 0, s1 = 0, s2 = 0;
+    n0 = 0; n1 = 0; n2 = 0;
+    const a0 = c0 !== null, a1 = c1 !== null, a2 = c2 !== null;
     for (let k = 0; k < n; k++) {
       const v = vol[i - k];
       if (v === null) continue;
-      const d0 = c0 === null ? null : Math.abs(v - c0), d1 = c1 === null ? null : Math.abs(v - c1), d2 = c2 === null ? null : Math.abs(v - c2);
-      if (plusPetit(d0, d1) && plusPetit(d0, d2)) { s0 += v; n0++; }
-      if (plusPetit(d1, d0) && plusPetit(d1, d2)) { s1 += v; n1++; }
-      if (plusPetit(d2, d0) && plusPetit(d2, d1)) { s2 += v; n2++; }
+      const d0 = a0 ? Math.abs(v - c0) : 0, d1 = a1 ? Math.abs(v - c1) : 0, d2 = a2 ? Math.abs(v - c2) : 0;
+      if (a0 && a1 && a2) {
+        if (d0 < d1 && d0 < d2) { s0 += v; n0++; }
+        if (d1 < d0 && d1 < d2) { s1 += v; n1++; }
+        if (d2 < d0 && d2 < d1) { s2 += v; n2++; }
+      }
     }
     const m0 = n0 ? s0 / n0 : null, m1 = n1 ? s1 / n1 : null, m2 = n2 ? s2 / n2 : null;
-    tailles = [n0, n1, n2];
     const stable = !differe(m0, c0) && !differe(m1, c1) && !differe(m2, c2);
     c0 = m0; c1 = m1; c2 = m2;
     if (stable) break;
   }
-  return { centres: [c0, c1, c2], tailles };
+  return { centres: [c0, c1, c2], tailles: [n0, n1, n2] };
 }
 
 function etape(p, e, data, i, derniere, s, env) {
@@ -129,7 +134,9 @@ function etape(p, e, data, i, derniere, s, env) {
     for (let k = 0; k < 3; k++) {
       cel(0, k + 1, NIVEAUX[k]);
       cel(1, k + 1, f(centres[k]));
-      cel(2, k + 1, f(tailles[2 - k]));
+      // [FIX 2026-11-26] taille du MEME groupe que le centre de la ligne (le script
+      // croisait forte et faible : ecart volontaire).
+      cel(2, k + 1, f(tailles[k]));
       cel(3, k + 1, `${NOMS[k]} (ATR : ${f(vol)})`, env.fond, groupe === k ? env.texte : env.fond);
     }
   }
