@@ -106,9 +106,13 @@ function etape(p, e, data, i, s, env) {
     if (descend(b.close, stop, q.close, q.niveaux[0])) bits |= 2;
     if (monte(b.high, stop, q.high, q.niveaux[0]) && b.close < stop) bits |= 4;
     if (descend(b.low, stop, q.low, q.niveaux[0]) && b.close > stop) bits |= 8;
-    if (monte(b.close, o1, q.close, q.niveaux[1])) bits |= 16;
-    if (monte(b.close, o2, q.close, q.niveaux[2])) bits |= 32;
-    if (monte(b.close, o3, q.close, q.niveaux[3])) bits |= 64;
+    // [FIX 2026-11-26] En tendance baissiere les objectifs sont SOUS l'entree : ils
+    // sont atteints par une cloture qui passe dessous (le script ne testait que le
+    // passage au-dessus, ecart volontaire). Sens lu sur les niveaux : objectif sous le stop.
+    const atteint = o1 !== null && stop !== null && o1 < stop ? descend : monte;
+    if (atteint(b.close, o1, q.close, q.niveaux[1])) bits |= 16;
+    if (atteint(b.close, o2, q.close, q.niveaux[2])) bits |= 32;
+    if (atteint(b.close, o3, q.close, q.niveaux[3])) bits |= 64;
   }
   S.alertes[i] = bits;
   e.prec = { close: b.close, high: b.high, low: b.low, niveaux: e.niveaux };
