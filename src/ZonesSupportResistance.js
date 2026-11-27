@@ -50,8 +50,11 @@ const INPUTS = [
 ];
 const nul = (v) => v === null || v === undefined || Number.isNaN(v);
 const fini = (v) => typeof v === 'number' && Number.isFinite(v);
-const amax = (a) => { let m = null; for (const v of a) if (m === null || v > m) m = v; return m; };
-const amin = (a) => { let m = null; for (const v of a) if (m === null || v < m) m = v; return m; };
+// Boucles indexees (memes comparaisons, dans le meme ordre, que l'ancien for...of).
+const amax = (a) => { let m = null; for (let k = 0; k < a.length; k++) { const v = a[k]; if (m === null || v > m) m = v; } return m; };
+const amin = (a) => { let m = null; for (let k = 0; k < a.length; k++) { const v = a[k]; if (m === null || v < m) m = v; } return m; };
+const mx = (a, c) => (a === null || c === null ? null : Math.max(a, c));
+const mn = (a, c) => (a === null || c === null ? null : Math.min(a, c));
 
 const sinc = (x, bw) => (x === 0 ? 1 : Math.sin(Math.PI * x / bw) / (Math.PI * x / bw));
 // Poids sinc(i - j, L + 1) par ecart i - j (memes appels, memes valeurs) : la distribution est filtree a chaque barre.
@@ -116,35 +119,52 @@ function series(p, d) {
 }
 
 /** Une barre : pivots, plage, scores bruts (avant filtrage). */
-function noter(p, e, d, i, s) {
-  const b = d[i], avec = [p.avec1, p.avec2, p.avec3, p.avec4];
-  const poids = (k) => (p.ponderation === 'Linear' ? 1 : p.ponderation === 'Time' ? i - s.L[k] : (i - s.L[k] >= 0 ? d[i - s.L[k]].volume : null));
-  for (let k = 0; k < 4; k++) if (!nul(s.ph[k][i]) && avec[k]) { e.hauts.push(s.ph[k][i]); e.poidsHauts.push(poids(k)); }
-  for (let k = 0; k < 4; k++) if (!nul(s.pl[k][i]) && avec[k]) { e.bas.push(s.pl[k][i]); e.poidsBas.push(poids(k)); }
+function noter(p, e, d, i, s, avecScores) {
+  const b = d[i];
+  // [PERF 2026-11-26] Sans fermeture ni tableau par barre ; ta.min des poids seulement en
+  // ponderation « Time » (seul mode qui le lit). Memes operations, dans le meme ordre.
+  for (let k = 0; k < 4; k++) {
+    if (!(k === 0 ? p.avec1 : k === 1 ? p.avec2 : k === 2 ? p.avec3 : p.avec4)) continue;
+    const v = s.ph[k][i];
+    if (!nul(v)) { e.hauts.push(v); e.poidsHauts.push(poidsPivot(p, d, i, s.L[k])); }
+  }
+  for (let k = 0; k < 4; k++) {
+    if (!(k === 0 ? p.avec1 : k === 1 ? p.avec2 : k === 2 ? p.avec3 : p.avec4)) continue;
+    const v = s.pl[k][i];
+    if (!nul(v)) { e.bas.push(v); e.poidsBas.push(poidsPivot(p, d, i, s.L[k])); }
+  }
   if (e.hauts.length > p.nombrePivots) { e.hauts.shift(); e.poidsHauts.shift(); }
   if (e.bas.length > p.nombrePivots) { e.bas.shift(); e.poidsBas.shift(); }
   e.maxHaut = e.maxHaut === null || b.high > e.maxHaut ? b.high : e.maxHaut; // ta.max(high)
-  const mx = (a, c) => (a === null || c === null ? null : Math.max(a, c)), mn = (a, c) => (a === null || c === null ? null : Math.min(a, c));
   const haut = mx(p.sommets ? amax(e.hauts) : 0, p.creux ? amax(e.bas) : 0);
   const bas = mn(p.sommets ? amin(e.hauts) : e.maxHaut, p.creux ? amin(e.bas) : e.maxHaut);
   e.cum += b.high - b.low;
   const atr = e.cum > 0 ? e.cum / (i + 1) : 10;
   const nb = p.precisionManuelle ? p.precision : (haut === null || bas === null ? null : Math.min(100, Math.max(10, Math.ceil((haut - bas) / atr))));
   const pas = nb === null || haut === null || bas === null ? null : (haut - bas) / nb;
+  const n = { i, scores: null, bas, pas, nb, atr, close: b.close };
+  if (avecScores) n.scores = scoresDe(p, e, n);
+  return n;
+}
+/** Scores bruts de la barre `n.i`, lus sur les pivots retenus a cette barre (e.hauts, e.bas). */
+function scoresDe(p, e, n) {
+  const { i, bas, pas, nb } = n;
   const scores = new Array(nb === null ? 0 : nb).fill(0);
   if (fini(pas) && pas > 0) {
-    const ajouter = (src, w) => {
-      const wmin = amin(w);
-      for (let q = 0; q < src.length; q++) {
-        const W = p.ponderation === 'Time' ? 1 + (i - wmin) - (i - w[q]) : w[q];
-        const idx = Math.min(Math.floor((src[q] - bas) / pas), nb - 1);
-        if (idx >= 0) scores[idx] = scores[idx] + W;
-      }
-    };
-    if (p.sommets) ajouter(e.hauts, e.poidsHauts);
-    if (p.creux) ajouter(e.bas, e.poidsBas);
+    if (p.sommets) ajouterScores(p, scores, i, e.hauts, e.poidsHauts, bas, pas, nb);
+    if (p.creux) ajouterScores(p, scores, i, e.bas, e.poidsBas, bas, pas, nb);
   }
-  return { i, scores, bas, pas, atr, close: b.close };
+  return scores;
+}
+const poidsPivot = (p, d, i, L) => (p.ponderation === 'Linear' ? 1 : p.ponderation === 'Time' ? i - L : (i - L >= 0 ? d[i - L].volume : null));
+function ajouterScores(p, scores, i, src, w, bas, pas, nb) {
+  const temps = p.ponderation === 'Time';
+  const wmin = temps ? amin(w) : 0;
+  for (let q = 0; q < src.length; q++) {
+    const W = temps ? 1 + (i - wmin) - (i - w[q]) : w[q];
+    const idx = Math.min(Math.floor((src[q] - bas) / pas), nb - 1);
+    if (idx >= 0) scores[idx] = scores[idx] + W;
+  }
 }
 
 /** Objets de la barre confirmee `n.i` (supprimes et recrees a chaque barre confirmee dans le script). */
@@ -210,7 +230,12 @@ function moyennePonderee(f, n) {
 }
 
 function etape(p, e, d, i, derniere, s, env) {
-  const S = e.sorties, n = noter(p, e, d, i, s);
+  // [PERF 2026-11-26] Sans moyenne, les scores ne servent qu'a la barre DESSINEE : la
+  // derniere, ou la derniere close (e.ferme) tant que la derniere n'est pas confirmee. Ceux
+  // d'une barre close sont calcules a la derniere barre, avant que noter() ne touche aux
+  // pivots : e.hauts / e.bas sont alors exactement ceux de e.ferme.i.
+  if (derniere && e.ferme && e.ferme.scores === null) e.ferme.scores = scoresDe(p, e, e.ferme);
+  const S = e.sorties, n = noter(p, e, d, i, s, derniere || p.moyenne);
   let f = null;
   if (p.moyenne) {
     f = filtrer(n.scores, p.filtrage);
