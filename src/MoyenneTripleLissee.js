@@ -4,7 +4,7 @@
 // la courbe lissee et son signal restent des sorties cachees, comme dans la fenetre de donnees de TradingView).
 import { creerObjets } from '../academyscript/objets.js';
 import { sma, ema, rma, wma, crossover, crossunder } from '../academyscript/ta.js';
-import { lireReglages, executer, contexte, tracer, transparence, degrade, remplir, suiteVide, masque, bit } from './commun.js';
+import { lireReglages, executer, contexte, tracer, transparence, degrade, remplir, suiteVide, masque, bit, extremesGlissants } from './commun.js';
 
 const SOURCES = [
   { label: 'Clôture', value: 'close' }, { label: 'Ouverture', value: 'open' }, { label: 'Plus haut', value: 'high' },
@@ -33,15 +33,7 @@ const choix = {
 const moyenne = (t, x, L) => (t === 'SMA' ? sma(x, L) : t === 'EMA' ? ema(x, L) : t === 'RMA' ? rma(x, L) : wma(x, L));
 
 /** ta.highest / ta.lowest de `L` barres : les na sont ignores, na si tous le sont ou si l'historique est trop court. */
-function extremes(v, L, haut) {
-  const out = new Array(v.length).fill(null);
-  for (let i = L - 1; i < v.length; i++) {
-    let m = null;
-    for (let k = 0; k < L; k++) { const x = v[i - k]; if (!nul(x) && (m === null || (haut ? x > m : x < m))) m = x; }
-    out[i] = m;
-  }
-  return out;
-}
+const extremes = extremesGlissants; // [PERF 2026-11-27] file monotone, meme resultat (cf. commun.js)
 
 function series(p, d) {
   const src = d.map(choix[p.source]), L = p.longueur;
