@@ -12,7 +12,8 @@ const INPUTS = [
     description: 'Une zone s’ouvre quand le RSI passe au-dessus de 70 ou sous 30 ; elle prend le plus haut et le plus bas de cette bougie.' },
   { id: 'dureeMin', name: 'Durée minimale d’une zone (barres)', type: 'number', entier: true, default: 15, min: 1, max: 500, step: 1, group: P,
     description: 'Aucune nouvelle zone ne s’ouvre avant ce nombre de barres.' },
-  { id: 'afficherValeurs', name: 'Afficher la valeur du RSI à l’ouverture', type: 'boolean', default: false, group: S },
+  { id: 'afficherValeurs', name: 'Afficher le niveau et le RSI à l’ouverture', type: 'boolean', default: false, group: S,
+    description: 'Étiquette « <niveau> · RSI <valeur> » sur la bougie d’ouverture, par exemple « 70 · RSI 73,4 » : le niveau haut ou bas affiché ci-dessous, puis la valeur du RSI à la clôture de cette bougie.' },
   { id: 'niveauHaut', name: 'Niveau haut affiché', type: 'number', entier: true, default: 70, min: 50, max: 100, step: 1, group: S },
   { id: 'niveauBas', name: 'Niveau bas affiché', type: 'number', entier: true, default: 30, min: 0, max: 50, step: 1, group: S },
   { id: 'couleurHausse', name: 'Au-dessus de 70', type: 'color', default: '#21c997', group: S },
@@ -20,6 +21,8 @@ const INPUTS = [
 ];
 const GRIS = '#787B86';
 const nul = (v) => v === null || v === undefined || Number.isNaN(v);
+// « 70 · RSI 73,4 » : niveau reglé, puis RSI de la bougie d'ouverture (une décimale, virgule).
+const texteEtiquette = (niveau, valeur) => (nul(valeur) ? `${niveau}` : `${niveau} · RSI ${valeur.toFixed(1).replace('.', ',')}`);
 
 function series(p, d) {
   const n = d.length, r = rsi(d.map((b) => b.close), p.longueur);
@@ -37,14 +40,14 @@ function series(p, d) {
     haut[i] = change ? null : up; bas[i] = change ? null : lo; couleur[i] = cc;
   }
   const milieu = haut.map((h, i) => (nul(h) || nul(bas[i]) ? null : (h + bas[i]) / 2));
-  return { haut, bas, milieu, couleur, bougie, ch, cb };
+  return { haut, bas, milieu, couleur, bougie, ch, cb, r };
 }
 
 function etape(p, e, d, i, derniere, s, env) {
   const o = e.o, b = d[i];
   remplir(o, e.fond, s.haut, s.bas, i, transparence(s.couleur[i], 90), derniere);
   if (p.afficherValeurs && (s.ch[i] || s.cb[i])) {
-    o.etiquette({ x: i, y: (b.high + b.low) / 2, texte: `RSI : ${s.ch[i] ? p.niveauHaut : p.niveauBas}`, style: 'label_right', couleur: null, couleurTexte: env.texte });
+    o.etiquette({ x: i, y: (b.high + b.low) / 2, texte: texteEtiquette(s.ch[i] ? p.niveauHaut : p.niveauBas, s.r[i]), style: 'label_right', couleur: null, couleurTexte: env.texte });
   }
 }
 
