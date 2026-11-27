@@ -236,22 +236,36 @@ function etape(p, e, d, i, derniere, s, env) {
     const pas = debut <= fin ? 1 : -1;
     const F = s.f, nf = p.nbCaracteristiques, k34 = Math.round(p.voisins * 3 / 4);
     const x1 = F[0][i], x2 = F[1][i], x3 = F[2][i], x4 = F[3][i], x5 = F[4][i];
-    for (let k = debut; pas > 0 ? k <= fin : k >= fin; k += pas) {
-      let dist;
-      if (nf === 5) dist = Math.log(1 + Math.abs(x1 - F[0][k])) + Math.log(1 + Math.abs(x2 - F[1][k])) + Math.log(1 + Math.abs(x3 - F[2][k])) + Math.log(1 + Math.abs(x4 - F[3][k])) + Math.log(1 + Math.abs(x5 - F[4][k]));
-      else if (nf === 4) dist = Math.log(1 + Math.abs(x1 - F[0][k])) + Math.log(1 + Math.abs(x2 - F[1][k])) + Math.log(1 + Math.abs(x3 - F[2][k])) + Math.log(1 + Math.abs(x4 - F[3][k]));
-      else if (nf === 3) dist = Math.log(1 + Math.abs(x1 - F[0][k])) + Math.log(1 + Math.abs(x2 - F[1][k])) + Math.log(1 + Math.abs(x3 - F[2][k]));
-      else dist = Math.log(1 + Math.abs(x1 - F[0][k])) + Math.log(1 + Math.abs(x2 - F[1][k]));
-      if (dist >= dernier && k % 4 !== 0) {
-        dernier = dist;
-        e.distances.push(dist);
-        e.predictions.push(Math.round(s.y[k]));
-        if (e.predictions.length > p.voisins) {
-          dernier = e.distances[k34];
-          e.distances.shift();
-          e.predictions.shift();
-        }
+    const F0 = F[0], F1 = F[1], F2 = F[2], F3 = F[3], F4 = F[4], Y = s.y, voisins = p.voisins;
+    // [PERF 2026-11-26] Un k multiple de 4 n'est jamais retenu (condition `k % 4 !== 0`) et
+    // la distance n'a pas d'autre effet : elle n'est plus calculee pour lui. Memes sommes
+    // de logarithmes, dans le meme ordre, pour les autres (calcul complet 2 000 barres x
+    // ~16 000 voisins : 1,3 s avant).
+    const retenir = (k, dist) => {
+      dernier = dist;
+      e.distances.push(dist);
+      e.predictions.push(Math.round(Y[k]));
+      if (e.predictions.length > voisins) {
+        dernier = e.distances[k34];
+        e.distances.shift();
+        e.predictions.shift();
       }
+    };
+    if (nf === 5 && pas < 0) {
+      // Cas par defaut (5 caracteristiques, historique borne) : boucle specialisee, memes operations.
+      for (let k = debut; k >= fin; k--) {
+        if (k % 4 === 0) continue;
+        const dist = Math.log(1 + Math.abs(x1 - F0[k])) + Math.log(1 + Math.abs(x2 - F1[k])) + Math.log(1 + Math.abs(x3 - F2[k])) + Math.log(1 + Math.abs(x4 - F3[k])) + Math.log(1 + Math.abs(x5 - F4[k]));
+        if (dist >= dernier) retenir(k, dist);
+      }
+    } else for (let k = debut; pas > 0 ? k <= fin : k >= fin; k += pas) {
+      if (k % 4 === 0) continue;
+      let dist;
+      if (nf === 5) dist = Math.log(1 + Math.abs(x1 - F0[k])) + Math.log(1 + Math.abs(x2 - F1[k])) + Math.log(1 + Math.abs(x3 - F2[k])) + Math.log(1 + Math.abs(x4 - F3[k])) + Math.log(1 + Math.abs(x5 - F4[k]));
+      else if (nf === 4) dist = Math.log(1 + Math.abs(x1 - F0[k])) + Math.log(1 + Math.abs(x2 - F1[k])) + Math.log(1 + Math.abs(x3 - F2[k])) + Math.log(1 + Math.abs(x4 - F3[k]));
+      else if (nf === 3) dist = Math.log(1 + Math.abs(x1 - F0[k])) + Math.log(1 + Math.abs(x2 - F1[k])) + Math.log(1 + Math.abs(x3 - F2[k]));
+      else dist = Math.log(1 + Math.abs(x1 - F0[k])) + Math.log(1 + Math.abs(x2 - F1[k]));
+      if (dist >= dernier) retenir(k, dist);
     }
     let somme = 0;
     for (const v of e.predictions) somme += v;
