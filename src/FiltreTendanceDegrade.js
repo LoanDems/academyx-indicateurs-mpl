@@ -3,7 +3,7 @@
 // Adaptation : barstate.isconfirmed = barre close (la derniere barre seulement si le graphique la dit close) ; les trois fill()
 // changent de couleur a chaque barre (degrade) : un polygone par barre et par fill, 500 au plus (plafond de la plateforme).
 import { creerObjets } from '../academyscript/objets.js';
-import { lireReglages, executer, contexte, tracer, transparence, degrade, remplir, suiteVide } from './commun.js';
+import { lireReglages, executer, contexte, tracer, transparence, degrade, remplir, suiteVide, extremesGlissants } from './commun.js';
 
 const SOURCES = [
   { label: 'Clôture', value: 'close' }, { label: 'Ouverture', value: 'open' }, { label: 'Plus haut', value: 'high' },
@@ -38,14 +38,6 @@ function filtre(src, L) {
   return out;
 }
 
-/** ta.lowest / ta.highest sur 100 barres : na ignores, na si l'historique est trop court. */
-function extreme(v, i, L, haut) {
-  if (i - L + 1 < 0) return null;
-  let m = null;
-  for (let k = 0; k < L; k++) { const x = v[i - k]; if (!nul(x) && (m === null || (haut ? x > m : x < m))) m = x; }
-  return m;
-}
-
 function series(p, d) {
   const n = d.length;
   const base = filtre(d.map(choix[p.source]), p.longueur);
@@ -53,16 +45,19 @@ function series(p, d) {
   const k = [0.618 * 2.5, 0.382 * 2, 0.236 * 1.5];
   const hauts = k.map((m) => base.map((b, i) => b + val[i] * m)), bas = k.map((m) => base.map((b, i) => b - val[i] * m));
   const diff = base.map((b, i) => (i >= 2 ? b - base[i - 2] : null));
-  const couleurs = new Array(n), fonds = new Array(n);
-  for (let i = 0; i < n; i++) {
-    couleurs[i] = !nul(diff[i]) && diff[i] >= 0 ? p.couleurHausse : p.couleurBaisse;
-    fonds[i] = transparence(degrade(diff[i], extreme(diff, i, 100, false), extreme(diff, i, 100, true), p.couleurBaisse, p.couleurHausse), p.transparence);
-  }
-  return { base, hauts, bas, diff, couleurs, fonds };
+  const couleurs = new Array(n);
+  for (let i = 0; i < n; i++) couleurs[i] = !nul(diff[i]) && diff[i] >= 0 ? p.couleurHausse : p.couleurBaisse;
+  // [PERF 2026-11-27] Couleur des bandes calculee a la demande : seule l'etape de la barre i la lit
+  // (une fois par barre close, la derniere a chaque tick) ; ta.lowest / ta.highest de 100 barres (na
+  // ignores, na si l'historique est trop court) par file monotone (mpl/commun.js), O(n) au lieu de O(n x 100).
+  const lo = extremesGlissants(diff, 100, false), hi = extremesGlissants(diff, 100, true);
+  const fond = (i) => transparence(degrade(diff[i], lo[i], hi[i], p.couleurBaisse, p.couleurHausse), p.transparence);
+  return { base, hauts, bas, diff, couleurs, fond };
 }
 
 function etape(p, e, d, i, derniere, s, env) {
-  for (let j = 0; j < 3; j++) remplir(e.o, e.f[j], s.hauts[j], s.bas[j], i, s.fonds[i], derniere);
+  const fond = s.fond(i);
+  for (let j = 0; j < 3; j++) remplir(e.o, e.f[j], s.hauts[j], s.bas[j], i, fond, derniere);
   const confirmee = !derniere || env.derniereConfirmee;
   const b = s.diff[i];
   if (!nul(b)) {
