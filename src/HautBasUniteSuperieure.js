@@ -120,7 +120,9 @@ export default class HautBasUniteSuperieureIndicator {
     if (typeof p.unite !== 'string' || !p.unite) p.unite = '1D';
     const env = contexte(data, ctx);
     return executer(HautBasUniteSuperieureIndicator._memo, JSON.stringify([p, env.texte, env.fond, pasDuGraphique(data, ctx)]), data, {
-      creer: () => ({ o: creerObjets({ maxLignes: 2, maxEtiquettes: 10, maxPolylignes: 500 }), remp: suiteVide() }),
+      // [FIX 2026-11-26] 3 lignes (haut, bas, milieu) : avec le max_lines_count = 2 du
+      // script, la plus ancienne (le prolongement du HAUT) partait toujours. Ecart volontaire.
+      creer: () => ({ o: creerObjets({ maxLignes: 3, maxEtiquettes: 10, maxPolylignes: 500 }), remp: suiteVide() }),
       series: (d) => series(p, d, ctx, env),
       etape: (etat, d, i, derniere, s) => etape(p, etat, d, i, derniere, s, env),
       rendre: (etat, d, s) => {
