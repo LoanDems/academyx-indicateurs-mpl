@@ -2,7 +2,7 @@
 // Portage JavaScript (AcademyX) de « Trend Levels [ChartPrime] » © ChartPrime — https://www.tradingview.com/script/bacXsRFN-Trend-Levels-ChartPrime/
 import { creerObjets } from '../academyscript/objets.js';
 import { formaterMotif } from '../academyscript/str.js';
-import { lireReglages, executer, contexte, tracer, degrade, transparence, milieu, remplir, suiteVide } from './commun.js';
+import { lireReglages, executer, contexte, tracer, degrade, transparence, milieu, remplir, suiteVide, extremesBougies } from './commun.js';
 
 const P = 'Paramètres', S = 'Style';
 const INPUTS = [
@@ -21,15 +21,7 @@ function deviseBase(ctx) {
   return t;
 }
 
-function extremes(d, p) {
-  const n = d.length, h = new Array(n).fill(null), l = new Array(n).fill(null);
-  for (let i = p.longueur - 1; i < n; i++) {
-    let a = -Infinity, b = Infinity;
-    for (let k = i - p.longueur + 1; k <= i; k++) { if (d[k].high > a) a = d[k].high; if (d[k].low < b) b = d[k].low; }
-    h[i] = a; l[i] = b;
-  }
-  return { h, l };
-}
+const extremes = (d, p) => extremesBougies(d, p.longueur); // [PERF 2026-11-27] files monotones, meme resultat (cf. commun.js)
 
 function creer() {
   return {
