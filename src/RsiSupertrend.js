@@ -3,7 +3,7 @@
 // Adaptation : la ligne du RSI, entierement transparente dans le script, n'est pas une sortie (elle borde les remplissages).
 import { creerObjets } from '../academyscript/objets.js';
 import { rsi, hma, sma, ema, rma, wma, vwma, crossover, crossunder } from '../academyscript/ta.js';
-import { lireReglages, executer, contexte, tracer, transparence, degrade, milieu, remplir, suiteVide, masque, bit } from './commun.js';
+import { lireReglages, executer, contexte, tracer, transparence, degrade, milieu, remplir, suiteVide, masque, bit, extremesGlissants } from './commun.js';
 
 const SOURCES = [
   { label: 'Clôture', value: 'close' }, { label: 'Ouverture', value: 'open' }, { label: 'Plus haut', value: 'high' },
@@ -39,15 +39,7 @@ const gt = (a, b) => !nul(a) && !nul(b) && a > b, lt = (a, b) => !nul(a) && !nul
 const nz = (v) => (nul(v) ? 0 : v);
 
 /** ta.highest / ta.lowest de `length` barres sur une serie a na : les na sont ignores, na si tous le sont. */
-function extremes(v, L, haut) {
-  const out = new Array(v.length).fill(null);
-  for (let i = L - 1; i < v.length; i++) {
-    let m = null;
-    for (let k = 0; k < L; k++) { const x = v[i - k]; if (!nul(x) && (m === null || (haut ? x > m : x < m))) m = x; }
-    out[i] = m;
-  }
-  return out;
-}
+const extremes = extremesGlissants; // [PERF 2026-11-27] file monotone, meme resultat (cf. commun.js)
 
 function series(p, d) {
   const n = d.length, src = d.map(choix[p.source]);
