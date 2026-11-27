@@ -8,7 +8,7 @@
 // a chaque appel de Sim_Vals) : la dispersion croit donc lineairement d'un pas a l'autre.
 import { creerObjets } from '../academyscript/objets.js';
 import { formaterMotif } from '../academyscript/str.js';
-import { lireReglages, executer, transparence, remplir, suiteVide, pointsStables, TRANSPARENT } from './commun.js';
+import { lireReglages, executer, transparence, remplir, suiteVide, pointsStables, TRANSPARENT, copierEtat, entreeMemo, poserEntree, memesCloses, cleDonnees } from './commun.js';
 
 const PR = 'Prévision', GR = 'Graine', AM = 'Amplitudes', PO = 'Poids', AF = 'Affichage', PA = 'Panneau d’information', S = 'Style';
 const INPUTS = [
@@ -256,13 +256,64 @@ export default class PrevisionMonteCarloIndicator {
     if (!Array.isArray(data) || data.length === 0) return { dans: [] };
     const p = this.params;
     const v = Number(p.debut);
+    const implicite = !(p.debut !== null && p.debut !== undefined && p.debut !== '' && Number.isFinite(v));
     // Heure de depart vide : `Barres` bougies avant la derniere.
-    const debut = p.debut !== null && p.debut !== undefined && p.debut !== '' && Number.isFinite(v) ? v
+    const debut = !implicite ? v
       : data[Math.min(data.length - 1, Math.max(1, data.length - p.barres))].time * 1000;   // une seule bougie : la premiere
-    return executer(PrevisionMonteCarloIndicator._memo, JSON.stringify([p, debut]), data, {
+    const memo = PrevisionMonteCarloIndicator._memo;
+    const cle = JSON.stringify([p, debut]);
+    if (implicite) PrevisionMonteCarloIndicator._reprendre(p, cle, data, debut);
+    return executer(memo, cle, data, {
       creer: () => creer(p, debut),
-      etape: (e, d, i, derniere) => etape(p, e, d, i, derniere),
+      etape: (e, d, i, derniere) => {
+        if (implicite && !derniere) PrevisionMonteCarloIndicator._noter(p, cle, e, d, i);
+        etape(p, e, d, i, derniere);
+      },
       rendre: (e, d) => rendre(p, e, d),
     });
   }
+
+  /**
+   * [PERF 2026-11-26] Depart implicite (`Barres` bougies avant la derniere) : il avance
+   * d'une bougie a chaque cloture, la cle du memo change et tout etait recalcule (175 a
+   * 240 ms sur 20 000 bougies, a chaque cloture). Or avant le depart, etape() ne lit
+   * e.debut que pour constater qu'il n'est pas atteint : l'etat au terme des barres
+   * anterieures au depart est le meme pour tout depart plus tardif. On en garde une copie
+   * (prise juste avant la premiere barre du depart, barres closes seulement) et un nouveau
+   * depart reprend de la.
+   */
+  static _noter(p, cle, e, d, i) {
+    if (d[i].time * 1000 < e.debut || PrevisionMonteCarloIndicator._notes.has(e)) return;
+    PrevisionMonteCarloIndicator._notes.add(e);
+    const m = entreeMemo(PrevisionMonteCarloIndicator._memo, cle, d);
+    if (!m || m.etat !== e || m.closes.length !== i) return;
+    const base = cleDonnees(JSON.stringify([p]), d);
+    const prefixes = PrevisionMonteCarloIndicator._prefixes;
+    prefixes.delete(base);
+    prefixes.set(base, { etat: copierEtat(e), nb: i, closes: m.closes });
+    while (prefixes.size > 4) prefixes.delete(prefixes.keys().next().value);
+  }
+
+  static _reprendre(p, cle, data, debut) {
+    const memo = PrevisionMonteCarloIndicator._memo;
+    if (entreeMemo(memo, cle, data)) return;
+    const snap = PrevisionMonteCarloIndicator._prefixes.get(cleDonnees(JSON.stringify([p]), data));
+    if (!snap || snap.nb < 1 || snap.nb >= data.length - 1) return;
+    // Toutes les barres reprises doivent preceder le nouveau depart, et etre les memes.
+    if (data[snap.nb - 1].time * 1000 >= debut || !memesCloses(snap.closes, data, snap.nb)) return;
+    const etat = copierEtat(snap.etat);
+    // Sorties propres a ce calcul : les valeurs des barres reprises (< nb), les points deja
+    // construits qui ne lisent qu'elles (< nb - 1, un point lit aussi la barre suivante).
+    const S = {};
+    for (const k of Object.keys(snap.etat.sorties)) {
+      const t = snap.etat.sorties[k];
+      S[k] = Array.isArray(t) ? t.slice(0, k.startsWith('_p') ? Math.max(0, snap.nb - 1) : snap.nb) : t;
+    }
+    etat.sorties = S;
+    etat.debut = debut;
+    poserEntree(memo, cle, data, etat, snap.nb);
+  }
 }
+
+PrevisionMonteCarloIndicator._prefixes = new Map();
+PrevisionMonteCarloIndicator._notes = new WeakSet();
