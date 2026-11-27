@@ -235,6 +235,10 @@ function etape(p, e, d, i) {
     e.inTrade = 1;
   }
   const memeSens = !nul(si) && !nul(s1) && si === s1;
+  // [FIX 2026-11-26] Ecart volontaire au script : ses tp_hit / sl_hit sont des `var`
+  // jamais remis a faux, l'alerte "objectif / stop atteint" tirait alors a CHAQUE
+  // barre apres le premier franchissement. Elle ne vaut plus que la barre du franchissement.
+  e.tpHit = false; e.slHit = false;
   if (e.tp) {
     const up = e.tp.haut, low = e.tp.bas;
     if ((si > 0 && !nul(up) && b.high < up) || (si < 0 && !nul(low) && b.low > low) || !memeSens) e.tp.droite = i;
@@ -266,7 +270,7 @@ function rendre(p, e, d, env) {
   cel(0, 0, 'Mesures'); cel(1, 0, 'Valeur');
   cel(0, 1, 'Tendances apprises'); cel(1, 1, String(e.cibles.length));
   cel(0, 2, 'Mouvement estimé'); cel(1, 2, fmt(nul(pm) ? null : pm * 100, '%'));
-  cel(0, 3, 'Taux de réussite (mouvement au moins égal \nà l’estimation)'); cel(1, 3, fmt(nul(win) ? null : win * 100, '%'));
+  cel(0, 3, 'Part des tendances passées ayant \natteint l’estimation'); cel(1, 3, fmt(nul(win) ? null : win * 100, '%'));
   cel(0, 4, 'Rapport gain / risque suggéré'); cel(1, 4, fmt(rr));
   const tr = S.trade[last], si = S.signe[last];
   cel(0, 5, 'Trade en cours'); cel(1, 5, tr !== 0 ? 'Oui' : 'Non', { fond: tr === 0 ? GRIS : si > 0 ? transparence(p.couleurHausse, 70) : transparence(p.couleurBaisse, 70) });
