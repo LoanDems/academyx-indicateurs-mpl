@@ -10,6 +10,7 @@
  * barre) est partage entre l'etat et sa copie.
  */
 import { CHART_BG, CHART_FG, mintickPourPrix } from '../academyscript/contexte.js';
+import { avecQueueTa } from '../academyscript/ta.js';
 
 export const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 
@@ -115,7 +116,9 @@ export function executer(memo, cleReglages, data, def) {
   const fin = data[n - 1];
   if (m.resultat && m.closes.length === n - 1 && m.derniere && identiques(m.derniere, fin)) return m.resultat;
 
-  const series = def.series ? def.series(data) : null;
+  // [PERF 2026-11-27] Series de ta.* : au tick, seule leur derniere valeur est refaite
+  // (reprise par rang d'appel, cf. avecQueueTa dans academyscript/ta.js).
+  const series = def.series ? avecQueueTa(m.ta || (m.ta = {}), () => def.series(data)) : null;
   for (let i = m.closes.length; i < n - 1; i++) {
     def.etape(m.etat, data, i, false, series);
     m.closes.push({ time: data[i].time, open: data[i].open, high: data[i].high, low: data[i].low, close: data[i].close, volume: data[i].volume });
@@ -359,4 +362,90 @@ export function pointTrace(data, valeurs, couleurs, j) {
     p.color = (!trou && couleurs[j + 1]) || TRANSPARENT;
   }
   return p;
+}
+
+/**
+ * [PERF 2026-11-27] Plus haut / plus bas glissant des `L` dernieres barres, na (null, undefined, NaN)
+ * ignores, null si tous le sont ou avant la barre L - 1 : meme resultat, valeur pour valeur, que la
+ * boucle des portages (lecture de la barre la plus recente vers la plus ancienne, remplacement sur
+ * strictement plus grand / plus petit, donc la PLUS RECENTE des valeurs egales), en O(n) par file
+ * monotone au lieu de O(n x L). L non entier ou < 1 : la boucle d'origine.
+ */
+export function extremesGlissants(v, L, haut) {
+  const n = v.length, out = new Array(n).fill(null);
+  const nul = (x) => x === null || x === undefined || Number.isNaN(x);
+  if (!Number.isInteger(L) || L < 1) {
+    for (let i = L - 1; i < n; i++) {
+      let m = null;
+      for (let k = 0; k < L; k++) { const x = v[i - k]; if (!nul(x) && (m === null || (haut ? x > m : x < m))) m = x; }
+      out[i] = m;
+    }
+    return out;
+  }
+  const f = new Int32Array(n);
+  let deb = 0, fin = 0;
+  for (let i = 0; i < n; i++) {
+    const x = v[i];
+    if (!nul(x)) {
+      while (fin > deb && (haut ? v[f[fin - 1]] <= x : v[f[fin - 1]] >= x)) fin--;
+      f[fin++] = i;
+    }
+    while (fin > deb && f[deb] <= i - L) deb++;
+    if (i >= L - 1) out[i] = fin > deb ? v[f[deb]] : null;
+  }
+  return out;
+}
+
+/**
+ * [PERF 2026-11-27] Plus haut des `high` et plus bas des `low` des `L` dernieres bougies ({ h, l },
+ * null avant la barre L - 1) : meme resultat, valeur pour valeur, que la boucle des portages (lecture
+ * de la plus ancienne a la plus recente, depart -Infinity / Infinity, remplacement sur strictement
+ * plus grand / plus petit, donc la PLUS ANCIENNE des valeurs egales ; une valeur jamais > -Infinity,
+ * NaN ou undefined, n'est jamais retenue), en O(n) par files monotones. L non entier ou < 1 : la boucle.
+ * `recente` : la boucle lit de la barre i vers le passe (la PLUS RECENTE des valeurs egales).
+ */
+export function extremesBougies(d, L, recente = false) {
+  const n = d.length, h = new Array(n).fill(null), l = new Array(n).fill(null);
+  if (!Number.isInteger(L) || L < 1) {
+    if (recente) {
+      for (let i = 0; i < n; i++) {
+        if (i < L - 1) continue;
+        let a = -Infinity, b = Infinity;
+        for (let k = 0; k < L; k++) { const x = d[i - k]; if (x.high > a) a = x.high; if (x.low < b) b = x.low; }
+        h[i] = a; l[i] = b;
+      }
+      return { h, l };
+    }
+    for (let i = L - 1; i < n; i++) {
+      let a = -Infinity, b = Infinity;
+      for (let k = i - L + 1; k <= i; k++) { if (d[k].high > a) a = d[k].high; if (d[k].low < b) b = d[k].low; }
+      h[i] = a; l[i] = b;
+    }
+    return { h, l };
+  }
+  if (recente) {
+    // pop des valeurs egales plus anciennes : la plus recente reste
+    const fh = new Int32Array(n), fb = new Int32Array(n);
+    let dh = 0, ah = 0, db = 0, ab = 0;
+    for (let i = 0; i < n; i++) {
+      const x = d[i].high, y = d[i].low;
+      if (x > -Infinity) { while (ah > dh && !(d[fh[ah - 1]].high > x)) ah--; fh[ah++] = i; }
+      if (y < Infinity) { while (ab > db && !(d[fb[ab - 1]].low < y)) ab--; fb[ab++] = i; }
+      while (ah > dh && fh[dh] <= i - L) dh++;
+      while (ab > db && fb[db] <= i - L) db++;
+      if (i >= L - 1) { h[i] = ah > dh ? d[fh[dh]].high : -Infinity; l[i] = ab > db ? d[fb[db]].low : Infinity; }
+    }
+    return { h, l };
+  }
+  const fh = new Int32Array(n), fb = new Int32Array(n);
+  let dh = 0, ah = 0, db = 0, ab = 0;
+  for (let i = 0; i < n; i++) {
+    const x = d[i].high, y = d[i].low;
+    if (x > -Infinity) { while (ah > dh && x > d[fh[ah - 1]].high) ah--; fh[ah++] = i; }
+    if (y < Infinity) { while (ab > db && y < d[fb[ab - 1]].low) ab--; fb[ab++] = i; }
+    while (ah > dh && fh[dh] <= i - L) dh++;
+    while (ab > db && fb[db] <= i - L) db++;
+    if (i >= L - 1) { h[i] = ah > dh ? d[fh[dh]].high : -Infinity; l[i] = ab > db ? d[fb[db]].low : Infinity; }
+  }
+  return { h, l };
 }
