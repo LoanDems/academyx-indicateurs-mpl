@@ -58,8 +58,10 @@ function etape(p, e, d, i, derniere, s, env) {
   };
   const message = (dir) => {
     let m = '';
-    m += eq(dir, pump) ? `Hausse du prix : ${tostring(r2(pump), 'percent')} %\n` : `Baisse du prix :${tostring(r2(dump), 'percent')}\n`;
-    m += `ATR moyen : ${tostring(nul(moyenne(ATR)) ? null : Math.round(moyenne(ATR) * 10000) / 10000, 'percent')}\n`;
+    // [FIX 2026-11-26] pump, dump et l'ATR sont DEJA en pourcentage : format.percent les
+    // remultipliait par 100 (« 523.00% % » pour +5,23 %). Un seul « % » ; ATR a 4 decimales au plus.
+    m += eq(dir, pump) ? `Hausse du prix : ${tostring(r2(pump), '0.00')} %\n` : `Baisse du prix : ${tostring(r2(dump), '0.00')} %\n`;
+    m += `ATR moyen : ${tostring(nul(moyenne(ATR)) ? null : Math.round(moyenne(ATR) * 10000) / 10000, '0.00##')} %\n`;
     m += `Moyenne du VWAP : ${tostring(mediane(VW), 'mintick', env.mintick)}\n`;
     m += `Volume moyen : ${tostring(somme(Vol), 'volume')}\n`;
     m += `Nombre de barres : ${Vol.length}\n`;
