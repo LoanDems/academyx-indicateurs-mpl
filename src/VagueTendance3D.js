@@ -74,6 +74,9 @@ const choix = {
 };
 
 const VITESSES_DEF = [['Fast', 'rapide'], ['Normal', 'normale'], ['Slow', 'lente']];
+// [PERF 2026-11-26] Noms des series par vitesse, construits une fois (etape() en composait
+// une trentaine par barre, chaque chaine neuve rehachee a chaque acces).
+const CLES = Object.fromEntries(VITESSES_DEF.map(([k]) => [k, Object.fromEntries(['ser', 'mir', 'cl', 'ca', 'cs', 'cas', 'casi', 'coulSerie'].map((c) => [c, `${c}${k}`]))]));
 
 /** Constantes des reglages : transparences multipliees, filtre et bornes de chaque vitesse. */
 function preparer(p) {
@@ -164,7 +167,7 @@ function etape(p, e, d, i, derniere, C) {
   S.th[i] = th;
   const th1 = i > 0 ? S.th[i - 1] : null;
   for (const [k] of VITESSES_DEF) {
-    const K = C.K[k], W = e.V[k];
+    const K = C.K[k], W = e.V[k], NK = CLES[k];
     let f = null;
     if (th !== null) {
       const moy = 0.5 * (th + (th1 !== null ? th1 : th));
@@ -172,10 +175,10 @@ function etape(p, e, d, i, derniere, C) {
     }
     W.f2 = W.f1; W.f1 = f;
     const ser = f === null ? null : K.longueur * f + K.decal;
-    S[`ser${k}`][i] = ser; S[`mir${k}`][i] = p.miroir && ser !== null ? -ser + 2 * K.decal : null;
+    S[NK.ser][i] = ser; S[NK.mir][i] = p.miroir && ser !== null ? -ser + 2 * K.decal : null;
     // compteur d'etapes (getColorGradientFromSteps)
     const xu = A.pas(S, W.xu, i, ser, K.decal), xd = A.pas(S, W.xd, i, ser, K.decal);
-    const s1 = i > 0 ? S[`ser${k}`][i - 1] : null;
+    const s1 = i > 0 ? S[NK.ser][i - 1] : null;
     const chg = ser !== null && s1 !== null ? ser - s1 : null;
     const up = gt(chg, 0), dn = lt(chg, 0);
     if (gt(ser, K.decal)) W.q = xu ? 1 : up ? Math.min(C.pas, W.q + 1) : dn ? Math.max(1, W.q - 1) : W.q;
@@ -183,14 +186,14 @@ function etape(p, e, d, i, derniere, C) {
     const haussier = f !== null && f >= 0, bc = haussier ? K.haus : K.bais;
     const src2 = (faible) => (ser !== null && ser >= K.base ? degrade(ser, K.base, K.mx, faible, bc) : degrade(ser, K.mn, K.base, bc, faible));
     const cl = src2(haussier ? K.hL : K.bL);
-    S[`cl${k}`][i] = cl; S[`ca${k}`][i] = src2(haussier ? K.hA : K.bA);
+    S[NK.cl][i] = cl; S[NK.ca][i] = src2(haussier ? K.hA : K.bA);
     const sens = haussier ? 1 : 0;
-    S[`cs${k}`][i] = K.cs[sens][W.q]; S[`cas${k}`][i] = K.cas[sens][W.q]; S[`casi${k}`][i] = K.cas[1 - sens][W.q];
+    S[NK.cs][i] = K.cs[sens][W.q]; S[NK.cas][i] = K.cas[sens][W.q]; S[NK.casi][i] = K.cas[1 - sens][W.q];
     // color.new(degrade, lT) : les deux bornes du degrade ont les canaux de bc, seule l'opacite varie.
-    S[`coulSerie${k}`][i] = K.montrer && cl !== null ? (haussier ? K.hL : K.bL) : null;
+    S[NK.coulSerie][i] = K.montrer && cl !== null ? (haussier ? K.hL : K.bL) : null;
   }
   const v = p.vitesse, ek = v === 'Fast' || v === 'Normal' || v === 'Slow' ? v : null;
-  S.serE[i] = ek ? S[`ser${ek}`][i] : null; S.coulE[i] = ek ? S[`cl${ek}`][i] : null;
+  S.serE[i] = ek ? S[CLES[ek].ser][i] : null; S.coulE[i] = ek ? S[CLES[ek].cl][i] : null;
   const k0 = gaussien(S.serE, i, 6, 6), k1 = gaussien(S.serE, i, 3, 2);
   S.k0[i] = k0; S.k1[i] = k1;
   const F = S.serFast[i], N = S.serNormal[i], Lt = S.serSlow[i];
