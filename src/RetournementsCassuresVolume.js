@@ -4,7 +4,7 @@
 // au lieu des lettres calligraphiees ; bougies colorees (plotcandle) et barcolor reunis en une couleur de bougie.
 import { creerObjets } from '../academyscript/objets.js';
 import { hma, sma, wma, crossover, crossunder } from '../academyscript/ta.js';
-import { lireReglages, executer, tracer, transparence, masque, bit } from './commun.js';
+import { lireReglages, executer, tracer, transparence, masque, bit, extremesGlissants } from './commun.js';
 
 const P = 'Paramètres', S = 'Style';
 const INPUTS = [
@@ -23,15 +23,7 @@ const nul = (v) => v === null || v === undefined || Number.isNaN(v);
 const gt = (a, b) => !nul(a) && !nul(b) && a > b, lt = (a, b) => !nul(a) && !nul(b) && a < b;
 
 /** ta.highest / ta.lowest de `length` barres : les na sont ignores, na si tous le sont ou avant la barre length - 1. */
-function extremes(v, L, haut) {
-  const out = new Array(v.length).fill(null);
-  for (let i = L - 1; i < v.length; i++) {
-    let m = null;
-    for (let k = 0; k < L; k++) { const x = v[i - k]; if (!nul(x) && (m === null || (haut ? x > m : x < m))) m = x; }
-    out[i] = m;
-  }
-  return out;
-}
+const extremes = extremesGlissants; // [PERF 2026-11-27] file monotone, meme resultat (cf. commun.js)
 
 function series(p, d) {
   const n = d.length, close = d.map((b) => b.close), vol = d.map((b) => b.volume);
