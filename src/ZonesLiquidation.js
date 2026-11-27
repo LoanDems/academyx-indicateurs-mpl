@@ -3,7 +3,7 @@
 import { creerObjets } from '../academyscript/objets.js';
 import { pivothigh, pivotlow } from '../academyscript/ta.js';
 import { tostring } from '../academyscript/str.js';
-import { lireReglages, contexte, transparence } from './commun.js';
+import { lireReglages, contexte, transparence, executer } from './commun.js';
 
 const P = 'Paramètres', Z = 'Zones', S = 'Style';
 const INPUTS = [
@@ -22,19 +22,31 @@ const INPUTS = [
 const ROUGE = '#F23645', VERT = '#4CAF50', GRIS = '#787B86';
 const fv = (v) => (v === null ? 'NaN' : tostring(v, 'volume'));
 
-/** Script entier rejoue a chaque calcul : last_bar_index est la derniere barre, comme au chargement sur TradingView. */
-function calculer(p, d, env) {
-  const n = d.length, last = n - 1, o = creerObjets({ maxBoites: 500, maxEtiquettes: 500, maxLignes: 50 });
-  const ph = pivothigh(d, p.longueur, p.longueur), pl = pivotlow(d, p.longueur, p.longueur);
+/**
+ * Script rejoue barre par barre ; last_bar_index (la derniere barre) entre dans le calcul de
+ * CHAQUE barre (volumes des 100 dernieres barres, bords droits des zones) : l'etat des barres
+ * closes ne vaut que pour une longueur donnee. [PERF 2026-11-26] Il est donc memorise par
+ * reglages ET longueur (executer, cle `[p, env, n]`) : un tick (meme longueur, memes barres
+ * closes) ne rejoue que la derniere barre ; une cloture recalcule tout, comme avant. Avant :
+ * tout le script a chaque tick (20 a 30 ms sur 20 000 bougies).
+ */
+function creer() {
+  return {
+    o: creerObjets({ maxBoites: 500, maxEtiquettes: 500, maxLignes: 50 }),
+    haut: [], bas: [], n1: null, n2: null, l1Haut: null, l1Bas: null, et1: null, et2: null, li1: null, li2: null,
+  };
+}
+
+function etape(p, e, d, i, env, s) {
+  const last = d.length - 1, o = e.o;
+  const { ph, pl } = s;
   const t = p.carteChaleur ? [85, 90, 95, 99] : [80, 85, 90, 95];
-  const haut = [], bas = [];
-  let n1 = null, n2 = null, l1Haut = null, l1Bas = null, et1 = null, et2 = null, li1 = null, li2 = null;
   const vol = (b) => (b ? b.volume : null);
-  const volumeDetect = (i, vente, index) => {
+  const volumeDetect = (j, vente, index) => {
     let v = 0;
-    if (last - i < 100 && index !== null) {
+    if (last - j < 100 && index !== null) {
       for (let k = 0; k <= index; k++) {
-        const b = d[i - k]; // avant la premiere barre : close[k] na, la comparaison est fausse
+        const b = d[j - k]; // avant la premiere barre : close[k] na, la comparaison est fausse
         if (b) v += vente ? (b.close < b.open ? -b.volume : 0) : (b.close > b.open ? b.volume : 0);
       }
     }
@@ -46,7 +58,7 @@ function calculer(p, d, env) {
       texte: p.carteChaleur ? '' : texte, alignH: 'left', couleurTexte: env.texte, tailleTexte: 'normal',
     }));
   };
-  const supprimerZones = (zones, vente, index, i, l1Prec) => {
+  const supprimerZones = (zones, vente, index, l1Prec) => {
     if (zones.length === 0) return null;
     const b = d[i], dernier = zones[0];
     const v0 = vol(b), v1 = vol(d[i - 1]);
@@ -76,43 +88,40 @@ function calculer(p, d, env) {
     for (let k = 0; k < zones.length; k++) if (zones.length > max) o.supprimer(zones.shift());
     return l1;
   };
-  for (let i = 0; i < n; i++) {
-    if (ph[i] !== null) {
-      const j = i - p.longueur, h = d[j].high;
-      n2 = j;
-      const a = h * 1.01, c = h * 1.02, e = h * 1.04, f = h * 1.1;
-      if (p.x100) boite(haut, j, a, h, transparence(p.couleurHaut, t[0]), '100X');
-      if (p.x50) boite(haut, j, c, a, transparence(p.couleurHaut, t[1]), '50X');
-      if (p.x25) boite(haut, j, e, c, transparence(p.couleurHaut, t[2]), '25X');
-      if (p.x10) boite(haut, j, f, e, transparence(p.couleurHaut, t[3]), '10X');
-    }
-    if (pl[i] !== null) {
-      const j = i - p.longueur, lo = d[j].low;
-      n1 = j;
-      const a = lo / 1.01, c = lo / 1.02, e = lo / 1.04, f = lo / 1.1;
-      if (p.x100) boite(bas, j, lo, a, transparence(p.couleurBas, t[0]), '100X');
-      if (p.x50) boite(bas, j, a, c, transparence(p.couleurBas, t[1]), '50X');
-      if (p.x25) boite(bas, j, c, e, transparence(p.couleurBas, t[2]), '25X');
-      if (p.x10) boite(bas, j, e, f, transparence(p.couleurBas, t[3]), '10X');
-    }
-    const vi1 = n1 === null ? null : last - n1, vi2 = n2 === null ? null : last - n2;
-    const index = vi2 !== null && vi1 !== null && vi2 > vi1 ? vi2 : vi1;
-    if (p.carteChaleur) {
-      let hh = null, ll = null;
-      if (i >= 99) { hh = -Infinity; ll = Infinity; for (let k = i - 99; k <= i; k++) { hh = Math.max(hh, d[k].high); ll = Math.min(ll, d[k].low); } }
-      const e1 = o.etiquette({ x: last + p.prolongement, y: hh, texte: '', style: 'label_left', couleur: transparence(p.couleurHaut, 20), couleurTexte: env.texte });
-      const n1l = o.ligne({ x1: last - 100, y1: hh, x2: last + p.prolongement, y2: hh, couleur: transparence(p.couleurHaut, 20) });
-      o.supprimer(li1); o.supprimer(et1); li1 = n1l; et1 = e1;
-      const e2 = o.etiquette({ x: last + p.prolongement, y: ll, texte: '', style: 'label_left', couleur: transparence(p.couleurBas, 40), couleurTexte: env.texte });
-      const n2l = o.ligne({ x1: last - 100, y1: ll, x2: last + p.prolongement, y2: ll, couleur: transparence(p.couleurBas, 20) });
-      o.supprimer(li2); o.supprimer(et2); li2 = n2l; et2 = e2;
-      et1.texte = fv(volumeDetect(i, true, 100));
-      et2.texte = fv(volumeDetect(i, false, 100));
-    }
-    l1Haut = supprimerZones(haut, true, index, i, l1Haut);
-    l1Bas = supprimerZones(bas, false, index, i, l1Bas);
+  if (ph[i] !== null) {
+    const j = i - p.longueur, h = d[j].high;
+    e.n2 = j;
+    const a = h * 1.01, c = h * 1.02, ee = h * 1.04, f = h * 1.1;
+    if (p.x100) boite(e.haut, j, a, h, transparence(p.couleurHaut, t[0]), '100X');
+    if (p.x50) boite(e.haut, j, c, a, transparence(p.couleurHaut, t[1]), '50X');
+    if (p.x25) boite(e.haut, j, ee, c, transparence(p.couleurHaut, t[2]), '25X');
+    if (p.x10) boite(e.haut, j, f, ee, transparence(p.couleurHaut, t[3]), '10X');
   }
-  return o.resultat();
+  if (pl[i] !== null) {
+    const j = i - p.longueur, lo = d[j].low;
+    e.n1 = j;
+    const a = lo / 1.01, c = lo / 1.02, ee = lo / 1.04, f = lo / 1.1;
+    if (p.x100) boite(e.bas, j, lo, a, transparence(p.couleurBas, t[0]), '100X');
+    if (p.x50) boite(e.bas, j, a, c, transparence(p.couleurBas, t[1]), '50X');
+    if (p.x25) boite(e.bas, j, c, ee, transparence(p.couleurBas, t[2]), '25X');
+    if (p.x10) boite(e.bas, j, ee, f, transparence(p.couleurBas, t[3]), '10X');
+  }
+  const vi1 = e.n1 === null ? null : last - e.n1, vi2 = e.n2 === null ? null : last - e.n2;
+  const index = vi2 !== null && vi1 !== null && vi2 > vi1 ? vi2 : vi1;
+  if (p.carteChaleur) {
+    let hh = null, ll = null;
+    if (i >= 99) { hh = -Infinity; ll = Infinity; for (let k = i - 99; k <= i; k++) { hh = Math.max(hh, d[k].high); ll = Math.min(ll, d[k].low); } }
+    const e1 = o.etiquette({ x: last + p.prolongement, y: hh, texte: '', style: 'label_left', couleur: transparence(p.couleurHaut, 20), couleurTexte: env.texte });
+    const n1l = o.ligne({ x1: last - 100, y1: hh, x2: last + p.prolongement, y2: hh, couleur: transparence(p.couleurHaut, 20) });
+    o.supprimer(e.li1); o.supprimer(e.et1); e.li1 = n1l; e.et1 = e1;
+    const e2 = o.etiquette({ x: last + p.prolongement, y: ll, texte: '', style: 'label_left', couleur: transparence(p.couleurBas, 40), couleurTexte: env.texte });
+    const n2l = o.ligne({ x1: last - 100, y1: ll, x2: last + p.prolongement, y2: ll, couleur: transparence(p.couleurBas, 20) });
+    o.supprimer(e.li2); o.supprimer(e.et2); e.li2 = n2l; e.et2 = e2;
+    e.et1.texte = fv(volumeDetect(i, true, 100));
+    e.et2.texte = fv(volumeDetect(i, false, 100));
+  }
+  e.l1Haut = supprimerZones(e.haut, true, index, e.l1Haut);
+  e.l1Bas = supprimerZones(e.bas, false, index, e.l1Bas);
 }
 
 export default class ZonesLiquidationIndicator {
@@ -141,6 +150,11 @@ export default class ZonesLiquidationIndicator {
     if (!Array.isArray(data) || data.length === 0) return { objets: creerObjets().resultat() };
     const p = this.params;
     const env = contexte(data, ctx);
-    return { objets: calculer(p, data, env) };
+    return executer(ZonesLiquidationIndicator._memo, JSON.stringify([p, env.texte, data.length]), data, {
+      creer,
+      series: (d) => ({ ph: pivothigh(d, p.longueur, p.longueur), pl: pivotlow(d, p.longueur, p.longueur) }),
+      etape: (e, d, i, derniere, s) => etape(p, e, d, i, env, s),
+      rendre: (e) => ({ objets: e.o.resultat() }),
+    });
   }
 }
