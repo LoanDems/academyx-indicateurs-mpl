@@ -3,7 +3,7 @@
 import { creerObjets } from '../academyscript/objets.js';
 import { stdev, wma, atr, crossover } from '../academyscript/ta.js';
 import { tostring } from '../academyscript/str.js';
-import { lireReglages, executer, contexte, tracer, transparence, degrade, milieu, remplir, suiteVide, signaux } from './commun.js';
+import { lireReglages, executer, contexte, tracer, transparence, degrade, milieu, remplir, suiteVide, signaux, extremesBougies } from './commun.js';
 
 const P = 'Paramètres', S = 'Style';
 const INPUTS = [
@@ -28,24 +28,40 @@ const flottant = (v) => (Number.isFinite(v) ? tostring(v, '#.##########') : 'NaN
 function series(p, d) {
   const n = d.length, L = p.normalisation;
   const norm = new Array(n);
+  // [PERF 2026-11-27] Plus haut / plus bas des L dernieres barres par files monotones (la plus RECENTE
+  // des valeurs egales, comme la boucle qui lisait de la barre i vers le passe) : O(n) au lieu de O(n x L).
+  const ext = extremesBougies(d, L, true);
   for (let i = 0; i < n; i++) {
     if (i < L - 1) { norm[i] = null; continue; }
-    let h = -Infinity, l = Infinity;
-    for (let k = 0; k < L; k++) { const b = d[i - k]; if (b.high > h) h = b.high; if (b.low < l) l = b.low; }
+    const h = ext.h[i], l = ext.l[i];
     norm[i] = h - l === 0 ? null : (d[i].close - l) / (h - l);
   }
   const haut = stdev(norm, 14), bas = wma(haut, p.detection);
   const ouvre = crossover(haut, bas), ferme = crossover(bas, haut);
   const duree = new Array(n), hh = new Array(n), ll = new Array(n);
   let depuis = null;
+  // [PERF 2026-11-27] La fenetre [i - dur + 1, i] ne fait le plus souvent que s'allonger d'une barre
+  // (meme debut qu'a la barre d'avant) : la barre i, lue en premier par la boucle d'origine, prend la
+  // place du resultat precedent sauf si celui-ci lui est strictement superieur (inferieur pour le bas).
+  // Debut qui change : la boucle d'origine. Meme resultat valeur pour valeur, O(n) au lieu de O(n x dur).
+  let debutPrec = -1, hP = -Infinity, lP = Infinity;
   for (let i = 0; i < n; i++) {
     depuis = ferme[i] ? 0 : depuis === null ? null : depuis + 1;
     const dur = Math.max(depuis === null ? 0 : depuis, 1);
     duree[i] = dur;
-    if (i - dur + 1 < 0) { hh[i] = null; ll[i] = null; continue; }
-    let h = -Infinity, l = Infinity;
-    for (let k = 0; k < dur; k++) { const b = d[i - k]; if (b.high > h) h = b.high; if (b.low < l) l = b.low; }
+    if (i - dur + 1 < 0) { hh[i] = null; ll[i] = null; debutPrec = -1; continue; }
+    const debut = i - dur + 1;
+    let h, l;
+    if (debut === debutPrec && i > debut) {
+      const b = d[i];
+      h = b.high > -Infinity && !(hP > b.high) ? b.high : hP;
+      l = b.low < Infinity && !(lP < b.low) ? b.low : lP;
+    } else {
+      h = -Infinity; l = Infinity;
+      for (let k = 0; k < dur; k++) { const b = d[i - k]; if (b.high > h) h = b.high; if (b.low < l) l = b.low; }
+    }
     hh[i] = h; ll[i] = l;
+    debutPrec = debut; hP = h; lP = l;
   }
   return { ouvre, duree, hh, ll, vola: atr(d, p.detection).map((v) => (v === null ? NaN : v / 2)) };
 }
