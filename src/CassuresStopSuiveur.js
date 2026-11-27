@@ -50,11 +50,21 @@ function sma(st, v, n) {
 }
 
 /** ta.median(close, 40) de la plateforme : tri de la fenetre, moyenne des deux valeurs centrales. */
+// [PERF 2026-11-26] Fenetre triee par insertion dans un tampon reutilise (ni tableau ni
+// comparateur par barre). Toute disposition croissante du meme multiensemble donne les
+// memes valeurs centrales : resultat identique au tri d'origine (clotures finies).
+let TAMPON = new Float64Array(64);
 function mediane(d, i, n) {
   if (i < n - 1) return null;
-  const f = [];
-  for (let k = i - n + 1; k <= i; k++) f.push(d[k].close);
-  f.sort((a, b) => a - b);
+  if (TAMPON.length < n) TAMPON = new Float64Array(n);
+  const f = TAMPON;
+  let t = 0;
+  for (let k = i - n + 1; k <= i; k++) {
+    const v = d[k].close;
+    let j = t++;
+    while (j > 0 && f[j - 1] > v) { f[j] = f[j - 1]; j--; }
+    f[j] = v;
+  }
   const m = Math.floor(n / 2);
   return n % 2 === 0 ? (f[m - 1] + f[m]) / 2 : f[m];
 }
