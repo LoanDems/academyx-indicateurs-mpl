@@ -43,14 +43,15 @@ function etape(p, e, d, i, derniere, s) {
   }
   const pas = (H - B) / R;
   const bins = new Array(R).fill(0), deltas = new Array(R).fill(0);
-  const vol = d[i].volume;
   for (let r = 0; r < R; r++) {
     const bas = B + pas * r, haut = bas + pas;
     for (let k = 0; k < N; k++) {
       const b = d[i - k];
       if (b && b.close >= bas - pas && b.close < haut + pas) bins[r] += b.volume;
-      // volume de la barre courante, comme le script (volume et non volume[j])
-      deltas[r] += b && b.close > b.open ? vol : -vol;
+      // [FIX 2026-11-26] volume de la barre j (le script lisait `volume`, celui de la
+      // barre courante, pour toutes : le Delta ne comptait que le nombre de barres
+      // haussieres et baissieres). Ecart volontaire ; barre absente = 0.
+      deltas[r] += b ? (b.close > b.open ? b.volume : -b.volume) : 0;
     }
   }
   let delta = 0;
